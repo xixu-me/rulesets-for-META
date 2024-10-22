@@ -1,0 +1,86 @@
+name: Convert Rulesets from YAML to MRS Format
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 23 * * *"
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "**/README.md"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set variables
+        run: |
+          echo "RELEASE_NAME=Released on $(date +%Y%m%d%H%M)" >> $GITHUB_ENV
+          echo "TAG_NAME=$(date +%Y%m%d%H%M)" >> $GITHUB_ENV
+          echo "YAML_URL=https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Download YAML rulesets
+        run: |
+          mkdir -p yaml
+          files=(apple applications cncidr direct gfw google greatfire icloud lancidr private proxy reject telegramcidr tld-not-cn)
+          for file in "${files[@]}"; do
+            wget "${YAML_URL}/${file}.txt" -O "yaml/${file}.txt"
+          done
+
+      - name: Download and prepare converter
+        run: |
+          mkdir -p converter
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r .tag_name)
+          curl -L "https://github.com/MetaCubeX/mihomo/releases/download/${LATEST_VERSION}/mihomo-linux-amd64-${LATEST_VERSION}.gz" -o converter/mihomo.gz
+          gzip -d converter/mihomo.gz
+          chmod +x converter/mihomo
+
+      - name: Convert YAML rulesets to MRS format
+        run: |
+          mkdir -p mrs
+          domain_files=(apple direct gfw google greatfire icloud private proxy reject tld-not-cn)
+          ipcidr_files=(cncidr lancidr telegramcidr)
+          for file in "${domain_files[@]}"; do
+            ./converter/mihomo convert-ruleset domain yaml "yaml/${file}.txt" "mrs/${file}.mrs"
+          done
+          for file in "${ipcidr_files[@]}"; do
+            ./converter/mihomo convert-ruleset ipcidr yaml "yaml/${file}.txt" "mrs/${file}.mrs"
+          done
+          cp yaml/applications.txt mrs/applications.yaml
+
+      - name: Release and upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ env.RELEASE_NAME }}
+          tag_name: ${{ env.TAG_NAME }}
+          draft: false
+          prerelease: false
+          files: |
+            mrs/*.mrs
+            mrs/*.yaml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Git push assets to "release" branch
+        run: |
+          cd mrs || exit 1
+          git init
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b release
+          git add .
+          git commit -m "${{ env.RELEASE_NAME }}"
+          git remote add origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
+          git push -f origin release
+
+      - name: Purge jsDelivr CDN
+        run: |
+          cd mrs || exit 1
+          for file in $(ls); do
+            curl -i "https://purge.jsdelivr.net/gh/${{ github.repository }}@release/${file}"
+          done
