@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository contains rulesets in MRS format converted from [Loyalsoldier's rulesets](https://github.com/Loyalsoldier/clash-rules).
+This repository contains rulesets in MRS format converted from [Loyalsoldier's rulesets](https://github.com/Loyalsoldier/clash-rules). Use GitHub Actions to automatically build at 7:00 am Beijing time every day to ensure the rules are up to date.
 
 ## URL
 
