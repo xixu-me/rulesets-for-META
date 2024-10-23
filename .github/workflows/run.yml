@@ -1,9 +1,9 @@
-name: Convert Rulesets from YAML to MRS Format
+name: Convert Merged YAML Rulesets to MRS Format
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 23 * * *"
+    - cron: "50 22 * * *"
   push:
     branches:
       - main
@@ -13,6 +13,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,54 +22,109 @@ jobs:
         run: |
           echo "RELEASE_NAME=Released on $(date +%Y%m%d%H%M)" >> $GITHUB_ENV
           echo "TAG_NAME=$(date +%Y%m%d%H%M)" >> $GITHUB_ENV
-          echo "YAML_URL=https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release" >> $GITHUB_ENV
+          echo "LOYALSOLDIER_URL=https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release" >> $GITHUB_ENV
+          echo "METACUBEX_URL=https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite" >> $GITHUB_ENV
         shell: bash
 
-      - name: Download YAML rulesets
+      - name: Create necessary directories
         run: |
-          mkdir -p yaml
+          mkdir -p loyalsoldier metacubex merged converter publish
+
+      - name: Download Loyalsoldier rulesets
+        run: |
           files=(apple applications cncidr direct gfw google greatfire icloud lancidr private proxy reject telegramcidr tld-not-cn)
-          for file in "${files[@]}"; do
-            wget "${YAML_URL}/${file}.txt" -O "yaml/${file}.txt"
+          for file in ${files[@]}; do
+            wget ${LOYALSOLDIER_URL}/${file}.txt -O loyalsoldier/${file}.yaml
           done
+
+      - name: Download MetaCubeX rulesets
+        run: |
+          files=(apple@cn gfw google@cn greatfire icloud private category-ads-all tld-!cn)
+          for file in ${files[@]}; do
+            wget ${METACUBEX_URL}/${file}.yaml -O metacubex/${file}.yaml
+          done
+
+      - name: Merge rulesets
+        run: |
+          merge_rulesets() {
+            local output_file=$1
+            shift
+            local input_files=("$@")
+            (
+              cat "${input_files[@]}" | \
+              sed "s/^[ ]*-[ ]*//; s/^'//; s/'$//" | \
+              sort -u | \
+              awk '{
+                if ($0 ~ /^\+\./) {
+                  domain = substr($0, 3)
+                  seen[domain] = 1
+                  print $0
+                } else if (!seen[$0]) {
+                  print $0
+                }
+              }' | \
+              sed "s/^/    - /" > merged/temp.txt
+            )
+            echo "payload:" > "merged/${output_file}"
+            grep -v "payload:" merged/temp.txt >> "merged/${output_file}"
+            rm merged/temp.txt
+          }
+          merge_rulesets "apple@cn.yaml" loyalsoldier/apple.yaml metacubex/apple@cn.yaml
+          merge_rulesets "gfw.yaml" loyalsoldier/gfw.yaml metacubex/gfw.yaml
+          merge_rulesets "google@cn.yaml" loyalsoldier/google.yaml metacubex/google@cn.yaml
+          merge_rulesets "greatfire.yaml" loyalsoldier/greatfire.yaml metacubex/greatfire.yaml
+          merge_rulesets "icloud.yaml" loyalsoldier/icloud.yaml metacubex/icloud.yaml
+          merge_rulesets "private.yaml" loyalsoldier/private.yaml metacubex/private.yaml
+          merge_rulesets "ads.yaml" loyalsoldier/reject.yaml metacubex/category-ads-all.yaml
+          merge_rulesets "tld-!cn.yaml" loyalsoldier/tld-not-cn.yaml metacubex/tld-!cn.yaml
+        shell: bash
 
       - name: Download and prepare converter
         run: |
-          mkdir -p converter
           LATEST_VERSION=$(curl -s https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r .tag_name)
           curl -L "https://github.com/MetaCubeX/mihomo/releases/download/${LATEST_VERSION}/mihomo-linux-amd64-${LATEST_VERSION}.gz" -o converter/mihomo.gz
           gzip -d converter/mihomo.gz
           chmod +x converter/mihomo
 
-      - name: Convert YAML rulesets to MRS format
+      - name: Convert YAML rulesets to MRS format and prepare for release
         run: |
-          mkdir -p mrs
-          domain_files=(apple direct gfw google greatfire icloud private proxy reject tld-not-cn)
+          files=(
+            apple@cn gfw google@cn greatfire icloud private ads tld-!cn
+            direct proxy reject
+            cncidr lancidr telegramcidr
+          )
+          merged_files=(apple@cn gfw google@cn greatfire icloud private ads tld-!cn)
           ipcidr_files=(cncidr lancidr telegramcidr)
-          for file in "${domain_files[@]}"; do
-            ./converter/mihomo convert-ruleset domain yaml "yaml/${file}.txt" "mrs/${file}.mrs"
+          for file in "${files[@]}"; do
+            if [[ " ${merged_files[*]} " =~ " ${file} " ]]; then
+              input_dir="merged"
+            elif [[ " ${ipcidr_files[*]} " =~ " ${file} " ]]; then
+              input_dir="loyalsoldier"
+              ruleset_type="ipcidr"
+            else
+              input_dir="loyalsoldier"
+            fi
+            ./converter/mihomo convert-ruleset ${ruleset_type:-domain} yaml ${input_dir}/${file}.yaml publish/${file}.mrs
+            cp ${input_dir}/${file}.yaml publish/${file}.yaml
           done
-          for file in "${ipcidr_files[@]}"; do
-            ./converter/mihomo convert-ruleset ipcidr yaml "yaml/${file}.txt" "mrs/${file}.mrs"
-          done
-          cp yaml/applications.txt mrs/applications.yaml
+          cp loyalsoldier/applications.yaml publish/applications.yaml
 
       - name: Release and upload assets
         uses: softprops/action-gh-release@v2
         with:
-          name: ${{ env.RELEASE_NAME }}
-          tag_name: ${{ env.TAG_NAME }}
+          name: "${{ env.RELEASE_NAME }}"
+          tag_name: "${{ env.TAG_NAME }}"
           draft: false
           prerelease: false
           files: |
-            mrs/*.mrs
-            mrs/*.yaml
+            publish/*.mrs
+            publish/*.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Git push assets to "release" branch
+      - name: Git push assets to release branch
         run: |
-          cd mrs || exit 1
+          cd publish || exit 1
           git init
           git config --local user.name "github-actions[bot]"
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -80,7 +136,7 @@ jobs:
 
       - name: Purge jsDelivr CDN
         run: |
-          cd mrs || exit 1
+          cd publish || exit 1
           for file in $(ls); do
             curl -i "https://purge.jsdelivr.net/gh/${{ github.repository }}@release/${file}"
           done
