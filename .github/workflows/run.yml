@@ -98,13 +98,15 @@ jobs:
           for file in "${files[@]}"; do
             if [[ " ${merged_files[*]} " =~ " ${file} " ]]; then
               input_dir="merged"
+              ruleset_type="domain"
             elif [[ " ${ipcidr_files[*]} " =~ " ${file} " ]]; then
               input_dir="loyalsoldier"
               ruleset_type="ipcidr"
             else
               input_dir="loyalsoldier"
+              ruleset_type="domain"
             fi
-            ./converter/mihomo convert-ruleset ${ruleset_type:-domain} yaml ${input_dir}/${file}.yaml publish/${file}.mrs
+            ./converter/mihomo convert-ruleset ${ruleset_type} yaml ${input_dir}/${file}.yaml publish/${file}.mrs
             cp ${input_dir}/${file}.yaml publish/${file}.yaml
           done
           cp loyalsoldier/applications.yaml publish/applications.yaml
