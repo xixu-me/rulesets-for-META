@@ -20,7 +20,7 @@ This repository contains rulesets in MRS format converted from [Loyalsoldier's r
 | private | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/private.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/private.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/private.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/private.mrs) |
 | proxy | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/proxy.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/proxy.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/proxy.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/proxy.mrs) |
 | telegramcidr | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/telegramcidr.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/telegramcidr.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/telegramcidr.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/telegramcidr.mrs) |
-| tld-not-cn | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/tld-not-cn.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/tld-not-cn.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/tld-not-cn.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/tld-not-cn.mrs) |
+| tld-!cn | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/tld-!cn.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/tld-!cn.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/tld-!cn.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/tld-!cn.mrs) |
 
 ## Disclaimer
 
