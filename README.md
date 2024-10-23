@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository contains rulesets in MRS format converted from [Loyalsoldier's rulesets](https://github.com/Loyalsoldier/clash-rules). Use GitHub Actions to automatically build at 7:00 am Beijing time every day to ensure the rules are up to date.
+This repository contains rulesets in MRS format converted from [Loyalsoldier's rulesets](https://github.com/Loyalsoldier/clash-rules). Use GitHub Actions to automatically build at 6:50 am Beijing time every day to ensure the rules are up to date.
 
 ## URLs
 
@@ -19,7 +19,6 @@ This repository contains rulesets in MRS format converted from [Loyalsoldier's r
 | lancidr | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/lancidr.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/lancidr.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/lancidr.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/lancidr.mrs) |
 | private | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/private.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/private.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/private.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/private.mrs) |
 | proxy | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/proxy.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/proxy.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/proxy.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/proxy.mrs) |
-| reject | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/reject.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/reject.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/reject.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/reject.mrs) |
 | telegramcidr | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/telegramcidr.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/telegramcidr.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/telegramcidr.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/telegramcidr.mrs) |
 | tld-not-cn | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/tld-not-cn.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/tld-not-cn.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/tld-not-cn.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/tld-not-cn.mrs) |
 
