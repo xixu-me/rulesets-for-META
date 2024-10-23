@@ -36,14 +36,14 @@ This repository contains rulesets in MRS format converted from extended [Loyalso
             format: mrs
             interval: 86400
             behavior: domain
-            path: ./ruleset/ads.yaml
+            path: ./ruleset/ads.mrs
             url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/ads.mrs"
         apple@cn:
             type: http
             format: mrs
             interval: 86400
             behavior: domain
-            path: ./ruleset/apple@cn.yaml
+            path: ./ruleset/apple@cn.mrs
             url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/apple@cn.mrs"
         applications:
             type: http
@@ -57,77 +57,77 @@ This repository contains rulesets in MRS format converted from extended [Loyalso
             format: mrs
             interval: 86400
             behavior: ipcidr
-            path: ./ruleset/cncidr.yaml
+            path: ./ruleset/cncidr.mrs
             url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/cncidr.mrs"
         direct:
             type: http
             format: mrs
             interval: 86400
             behavior: domain
-            path: ./ruleset/direct.yaml
+            path: ./ruleset/direct.mrs
             url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/direct.mrs"
         gfw:
             type: http
             format: mrs
             interval: 86400
             behavior: domain
-            path: ./ruleset/gfw.yaml
+            path: ./ruleset/gfw.mrs
             url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/gfw.mrs"
         google@cn:
             type: http
             format: mrs
             interval: 86400
             behavior: domain
-            path: ./ruleset/google@cn.yaml
+            path: ./ruleset/google@cn.mrs
             url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/google@cn.mrs"
         greatfire:
             type: http
             format: mrs
             interval: 86400
             behavior: domain
-            path: ./ruleset/greatfire.yaml
+            path: ./ruleset/greatfire.mrs
             url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/greatfire.mrs"
         icloud:
             type: http
             format: mrs
             interval: 86400
             behavior: domain
-            path: ./ruleset/icloud.yaml
+            path: ./ruleset/icloud.mrs
             url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/icloud.mrs"
         lancidr:
             type: http
             format: mrs
             interval: 86400
             behavior: ipcidr
-            path: ./ruleset/lancidr.yaml
+            path: ./ruleset/lancidr.mrs
             url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/lancidr.mrs"
         private:
             type: http
             format: mrs
             interval: 86400
             behavior: domain
-            path: ./ruleset/private.yaml
+            path: ./ruleset/private.mrs
             url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/private.mrs"
         proxy:
             type: http
             format: mrs
             interval: 86400
             behavior: domain
-            path: ./ruleset/proxy.yaml
+            path: ./ruleset/proxy.mrs
             url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/proxy.mrs"
         telegramcidr:
             type: http
             format: mrs
             interval: 86400
             behavior: ipcidr
-            path: ./ruleset/telegramcidr.yaml
+            path: ./ruleset/telegramcidr.mrs
             url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/telegramcidr.mrs"
         tld-!cn:
             type: http
             format: mrs
             interval: 86400
             behavior: domain
-            path: ./ruleset/tld-!cn.yaml
+            path: ./ruleset/tld-!cn.mrs
             url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/tld-!cn.mrs"
     ```
 
