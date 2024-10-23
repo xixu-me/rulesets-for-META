@@ -90,8 +90,8 @@ jobs:
         run: |
           files=(
             apple@cn gfw google@cn greatfire icloud private ads tld-!cn
-            direct proxy reject
             cncidr lancidr telegramcidr
+            direct proxy
           )
           merged_files=(apple@cn gfw google@cn greatfire icloud private ads tld-!cn)
           ipcidr_files=(cncidr lancidr telegramcidr)
