@@ -146,9 +146,9 @@ This repository contains rulesets in MRS format converted from extended [Loyalso
     - RULE-SET,greatfire,PROXY
     - RULE-SET,tld-!cn,PROXY
     - RULE-SET,direct,DIRECT
-    - RULE-SET,lancidr,DIRECT,no-resolve
-    - RULE-SET,cncidr,DIRECT,no-resolve
-    - RULE-SET,telegramcidr,PROXY,no-resolve
+    - RULE-SET,lancidr,DIRECT
+    - RULE-SET,cncidr,DIRECT
+    - RULE-SET,telegramcidr,PROXY
     - MATCH,PROXY
     ```
 
