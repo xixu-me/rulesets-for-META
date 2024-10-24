@@ -39,7 +39,7 @@ jobs:
 
       - name: Download MetaCubeX rulesets
         run: |
-          files=(apple@cn cn gfw google@cn greatfire icloud private category-ads-all tld-!cn)
+          files=(apple@cn cn gfw google@cn greatfire icloud private geolocation-!cn category-ads-all tld-!cn)
           for file in ${files[@]}; do
             wget ${METACUBEX_URL}/${file}.yaml -O metacubex/${file}.yaml
           done
@@ -76,6 +76,7 @@ jobs:
           merge_rulesets "greatfire.yaml" loyalsoldier/greatfire.yaml metacubex/greatfire.yaml
           merge_rulesets "icloud.yaml" loyalsoldier/icloud.yaml metacubex/icloud.yaml
           merge_rulesets "private.yaml" loyalsoldier/private.yaml metacubex/private.yaml
+          merge_rulesets "proxy.yaml" loyalsoldier/proxy.yaml metacubex/geolocation-!cn.yaml
           merge_rulesets "ads.yaml" loyalsoldier/reject.yaml metacubex/category-ads-all.yaml
           merge_rulesets "tld-!cn.yaml" loyalsoldier/tld-not-cn.yaml metacubex/tld-!cn.yaml
         shell: bash
@@ -90,22 +91,17 @@ jobs:
       - name: Convert YAML rulesets to MRS format and prepare for release
         run: |
           files=(
-            apple@cn direct gfw google@cn greatfire icloud private ads tld-!cn
+            apple@cn direct gfw google@cn greatfire icloud private proxy ads tld-!cn
             cncidr lancidr telegramcidr
-            proxy
           )
-          merged_files=(apple@cn direct gfw google@cn greatfire icloud private ads tld-!cn)
-          ipcidr_files=(cncidr lancidr telegramcidr)
+          merged_files=(apple@cn direct gfw google@cn greatfire icloud private proxy ads tld-!cn)
           for file in "${files[@]}"; do
             if [[ " ${merged_files[*]} " =~ " ${file} " ]]; then
               input_dir="merged"
               ruleset_type="domain"
-            elif [[ " ${ipcidr_files[*]} " =~ " ${file} " ]]; then
-              input_dir="loyalsoldier"
-              ruleset_type="ipcidr"
             else
               input_dir="loyalsoldier"
-              ruleset_type="domain"
+              ruleset_type="ipcidr"
             fi
             ./converter/mihomo convert-ruleset ${ruleset_type} yaml ${input_dir}/${file}.yaml publish/${file}.mrs
             cp ${input_dir}/${file}.yaml publish/${file}.yaml
