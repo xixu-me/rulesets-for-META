@@ -1,8 +1,8 @@
-# Rulesets in MRS Format - The fundamental and vital component of Project META
+# Rulesets in MRS Format - a fundamental and vital component of Project META
 
 ## Overview
 
-This repository is the fundamental and vital component of Project META containing rulesets in MRS format converted from extended [Loyalsoldier's rulesets](https://github.com/Loyalsoldier/clash-rules) merged with the corresponding [MetaCubeX's rulesets](https://github.com/MetaCubeX/meta-rules-dat). Use GitHub Actions to automatically build every day at 6:50 am Beijing time to ensure the rulesets kept up to date.
+This repository a the fundamental and vital component of Project META containing rulesets in MRS format converted from extended [Loyalsoldier's rulesets](https://github.com/Loyalsoldier/clash-rules) merged with the corresponding [MetaCubeX's rulesets](https://github.com/MetaCubeX/meta-rules-dat). Use GitHub Actions to automatically build every day at 6:50 am Beijing time to ensure the rulesets kept up to date.
 
 ## URLs
 
