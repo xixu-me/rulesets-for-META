@@ -66,13 +66,6 @@ This repository contains rulesets in MRS format converted from extended [Loyalso
             behavior: domain
             path: ./ruleset/direct.mrs
             url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/direct.mrs"
-        gfw:
-            type: http
-            format: mrs
-            interval: 86400
-            behavior: domain
-            path: ./ruleset/gfw.mrs
-            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/gfw.mrs"
         google@cn:
             type: http
             format: mrs
@@ -80,13 +73,6 @@ This repository contains rulesets in MRS format converted from extended [Loyalso
             behavior: domain
             path: ./ruleset/google@cn.mrs
             url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/google@cn.mrs"
-        greatfire:
-            type: http
-            format: mrs
-            interval: 86400
-            behavior: domain
-            path: ./ruleset/greatfire.mrs
-            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/greatfire.mrs"
         icloud:
             type: http
             format: mrs
@@ -136,19 +122,17 @@ This repository contains rulesets in MRS format converted from extended [Loyalso
     ```yaml
     rules:
     - RULE-SET,applications,DIRECT
+    - RULE-SET,lancidr,DIRECT
     - RULE-SET,private,DIRECT
     - RULE-SET,ads,REJECT
     - RULE-SET,icloud,DIRECT
     - RULE-SET,apple@cn,DIRECT
     - RULE-SET,google@cn,PROXY
-    - RULE-SET,proxy,PROXY
-    - RULE-SET,gfw,PROXY
-    - RULE-SET,greatfire,PROXY
-    - RULE-SET,tld-!cn,PROXY
     - RULE-SET,direct,DIRECT
-    - RULE-SET,lancidr,DIRECT
-    - RULE-SET,cncidr,DIRECT
+    - RULE-SET,proxy,PROXY
+    - RULE-SET,tld-!cn,PROXY
     - RULE-SET,telegramcidr,PROXY
+    - RULE-SET,cncidr,DIRECT
     - MATCH,PROXY
     ```
 
