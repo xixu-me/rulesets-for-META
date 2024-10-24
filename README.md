@@ -1,4 +1,4 @@
-# Rulesets in MRS Format
+# Rulesets in MRS Format - the basis and vital component of Project META
 
 ## Overview
 
