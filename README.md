@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository contains rulesets in MRS format converted from extended [Loyalsoldier's rulesets](https://github.com/Loyalsoldier/clash-rules) merged with the corresponding [MetaCubeX's rulesets](https://github.com/MetaCubeX/meta-rules-dat). Use GitHub Actions to automatically build every day at 6:50 am Beijing time to ensure the rules are up to date.
+This repository is the fundamental and vital component of Project META containing rulesets in MRS format converted from extended [Loyalsoldier's rulesets](https://github.com/Loyalsoldier/clash-rules) merged with the corresponding [MetaCubeX's rulesets](https://github.com/MetaCubeX/meta-rules-dat). Use GitHub Actions to automatically build every day at 6:50 am Beijing time to ensure the rulesets kept up to date.
 
 ## URLs
 
