@@ -39,7 +39,7 @@ jobs:
 
       - name: Download MetaCubeX rulesets
         run: |
-          files=(apple@cn gfw google@cn greatfire icloud private category-ads-all tld-!cn)
+          files=(apple@cn cn gfw google@cn greatfire icloud private category-ads-all tld-!cn)
           for file in ${files[@]}; do
             wget ${METACUBEX_URL}/${file}.yaml -O metacubex/${file}.yaml
           done
@@ -70,6 +70,7 @@ jobs:
             rm merged/temp.txt
           }
           merge_rulesets "apple@cn.yaml" loyalsoldier/apple.yaml metacubex/apple@cn.yaml
+          merge_rulesets "direct.yaml" loyalsoldier/direct.yaml metacubex/cn.yaml
           merge_rulesets "gfw.yaml" loyalsoldier/gfw.yaml metacubex/gfw.yaml
           merge_rulesets "google@cn.yaml" loyalsoldier/google.yaml metacubex/google@cn.yaml
           merge_rulesets "greatfire.yaml" loyalsoldier/greatfire.yaml metacubex/greatfire.yaml
@@ -89,11 +90,11 @@ jobs:
       - name: Convert YAML rulesets to MRS format and prepare for release
         run: |
           files=(
-            apple@cn gfw google@cn greatfire icloud private ads tld-!cn
+            apple@cn direct gfw google@cn greatfire icloud private ads tld-!cn
             cncidr lancidr telegramcidr
-            direct proxy
+            proxy
           )
-          merged_files=(apple@cn gfw google@cn greatfire icloud private ads tld-!cn)
+          merged_files=(apple@cn direct gfw google@cn greatfire icloud private ads tld-!cn)
           ipcidr_files=(cncidr lancidr telegramcidr)
           for file in "${files[@]}"; do
             if [[ " ${merged_files[*]} " =~ " ${file} " ]]; then
