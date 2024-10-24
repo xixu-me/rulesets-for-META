@@ -1,6 +1,6 @@
 # Rulesets in MRS Format
 
-＞ the fundamental and vital component of Project META
+﹥ the fundamental and vital component of Project META
 
 ## Overview
 
