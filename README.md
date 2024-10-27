@@ -115,6 +115,15 @@ This repository is a fundamental and vital component of [Project META](https://g
             behavior: domain
             path: ./ruleset/tld-!cn.mrs
             url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/tld-!cn.mrs"
+
+        bilibili:
+            type: http
+            format: mrs
+            interval: 86400
+            behavior: domain
+            path: ./ruleset/bilibili.mrs
+            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@universal/bilibili.mrs"
+        ...
     ```
 
 - The following is an example of routing rules in the configuration, for reference only.
@@ -124,15 +133,17 @@ This repository is a fundamental and vital component of [Project META](https://g
     - RULE-SET,applications,DIRECT
     - RULE-SET,lancidr,DIRECT
     - RULE-SET,private,DIRECT
-    - RULE-SET,reject,REJECT
-    - RULE-SET,icloud,DIRECT
+    - RULE-SET,reject,Advertising
+    - RULE-SET,bilibili,bilibili
+    ...
+    - RULE-SET,icloud,iCloud
     - RULE-SET,apple@cn,DIRECT
     - RULE-SET,google@cn,PROXY
-    - RULE-SET,direct,DIRECT
+    - RULE-SET,direct,Mainland China
     - RULE-SET,proxy,PROXY
     - RULE-SET,tld-!cn,PROXY
-    - RULE-SET,telegramcidr,PROXY
-    - RULE-SET,cncidr,DIRECT
+    - RULE-SET,telegramcidr,Telegram
+    - RULE-SET,cncidr,Mainland China
     - MATCH,PROXY
     ```
 
