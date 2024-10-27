@@ -4,7 +4,14 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-      timezone: "Asia/Shanghai"
-      time: "07:00"
+      time: "03:00"
+      timezone: "Etc/UTC"
+    labels:
+      - "dependencies"
+      - "automerge"
+    automerge: true
+    commit-message:
+      prefix: "chore"
+      include: "scope"
     pull-request-branch-name:
       separator: "-"
