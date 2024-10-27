@@ -2,26 +2,26 @@
 
 ## Overview
 
-This repository is a fundamental and vital component of [Project META](https://github.com/Project-META) containing rulesets in MRS format converted from extended [Loyalsoldier's rulesets](https://github.com/Loyalsoldier/clash-rules) merged with the corresponding [MetaCubeX's rulesets](https://github.com/MetaCubeX/meta-rules-dat). Use GitHub Actions to automatically build every day at 6:50 am Beijing time to ensure that the rulesets are kept up to date.
+This repository is a fundamental and vital component of [Project META](https://github.com/Project-META) containing rulesets in MRS format.
 
 ## URLs
 
 | Ruleset | GitHub Raw | jsDelivr |
 | ------- | -------------- | -------------- |
-| ads | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/ads.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/ads.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/ads.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/ads.mrs) |
-| apple@cn | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/apple@cn.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/apple@cn.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/apple@cn.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/apple@cn.mrs) |
-| applications (can't be converted to MRS) | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/applications.yaml](https://raw.githubusercontent.com/Project-META/rules-mrs/release/applications.yaml) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/applications.yaml](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/applications.yaml) |
-| cncidr | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/cncidr.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/cncidr.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/cncidr.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/cncidr.mrs) |
-| direct | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/direct.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/direct.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/direct.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/direct.mrs) |
-| gfw | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/gfw.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/gfw.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/gfw.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/gfw.mrs) |
-| google@cn | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/google@cn.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/google@cn.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/google@cn.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/google@cn.mrs) |
-| greatfire | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/greatfire.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/greatfire.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/greatfire.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/greatfire.mrs) |
-| icloud | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/icloud.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/icloud.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/icloud.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/icloud.mrs) |
-| lancidr | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/lancidr.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/lancidr.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/lancidr.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/lancidr.mrs) |
-| private | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/private.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/private.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/private.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/private.mrs) |
-| proxy | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/proxy.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/proxy.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/proxy.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/proxy.mrs) |
-| telegramcidr | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/telegramcidr.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/telegramcidr.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/telegramcidr.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/telegramcidr.mrs) |
-| tld-!cn | [https://raw.githubusercontent.com/Project-META/rules-mrs/release/tld-!cn.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/release/tld-!cn.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/tld-!cn.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/tld-!cn.mrs) |
+| apple@cn | [https://raw.githubusercontent.com/Project-META/rules-mrs/basic/apple@cn.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/basic/apple@cn.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/apple@cn.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/apple@cn.mrs) |
+| applications (can't be converted to MRS) | [https://raw.githubusercontent.com/Project-META/rules-mrs/basic/applications.yaml](https://raw.githubusercontent.com/Project-META/rules-mrs/basic/applications.yaml) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/applications.yaml](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/applications.yaml) |
+| cncidr | [https://raw.githubusercontent.com/Project-META/rules-mrs/basic/cncidr.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/basic/cncidr.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/cncidr.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/cncidr.mrs) |
+| direct | [https://raw.githubusercontent.com/Project-META/rules-mrs/basic/direct.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/basic/direct.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/direct.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/direct.mrs) |
+| gfw | [https://raw.githubusercontent.com/Project-META/rules-mrs/basic/gfw.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/basic/gfw.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/gfw.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/gfw.mrs) |
+| google@cn | [https://raw.githubusercontent.com/Project-META/rules-mrs/basic/google@cn.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/basic/google@cn.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/google@cn.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/google@cn.mrs) |
+| greatfire | [https://raw.githubusercontent.com/Project-META/rules-mrs/basic/greatfire.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/basic/greatfire.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/greatfire.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/greatfire.mrs) |
+| icloud | [https://raw.githubusercontent.com/Project-META/rules-mrs/basic/icloud.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/basic/icloud.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/icloud.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/icloud.mrs) |
+| lancidr | [https://raw.githubusercontent.com/Project-META/rules-mrs/basic/lancidr.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/basic/lancidr.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/lancidr.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/lancidr.mrs) |
+| private | [https://raw.githubusercontent.com/Project-META/rules-mrs/basic/private.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/basic/private.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/private.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/private.mrs) |
+| proxy | [https://raw.githubusercontent.com/Project-META/rules-mrs/basic/proxy.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/basic/proxy.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/proxy.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/proxy.mrs) |
+| reject | [https://raw.githubusercontent.com/Project-META/rules-mrs/basic/reject.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/basic/reject.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/reject.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/reject.mrs) |
+| telegramcidr | [https://raw.githubusercontent.com/Project-META/rules-mrs/basic/telegramcidr.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/basic/telegramcidr.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/telegramcidr.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/telegramcidr.mrs) |
+| tld-!cn | [https://raw.githubusercontent.com/Project-META/rules-mrs/basic/tld-!cn.mrs](https://raw.githubusercontent.com/Project-META/rules-mrs/basic/tld-!cn.mrs) | [https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/tld-!cn.mrs](https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/tld-!cn.mrs) |
 
 ## Usage
 
@@ -31,90 +31,90 @@ This repository is a fundamental and vital component of [Project META](https://g
 
     ```yaml
     rule-providers:
-        ads:
+        reject:
             type: http
             format: mrs
             interval: 86400
             behavior: domain
-            path: ./ruleset/ads.mrs
-            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/ads.mrs"
+            path: ./ruleset/reject.mrs
+            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/reject.mrs"
         apple@cn:
             type: http
             format: mrs
             interval: 86400
             behavior: domain
             path: ./ruleset/apple@cn.mrs
-            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/apple@cn.mrs"
+            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/apple@cn.mrs"
         applications:
             type: http
             format: yaml
             interval: 86400
             behavior: classical
             path: ./ruleset/applications.yaml
-            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/applications.yaml"
+            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/applications.yaml"
         cncidr:
             type: http
             format: mrs
             interval: 86400
             behavior: ipcidr
             path: ./ruleset/cncidr.mrs
-            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/cncidr.mrs"
+            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/cncidr.mrs"
         direct:
             type: http
             format: mrs
             interval: 86400
             behavior: domain
             path: ./ruleset/direct.mrs
-            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/direct.mrs"
+            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/direct.mrs"
         google@cn:
             type: http
             format: mrs
             interval: 86400
             behavior: domain
             path: ./ruleset/google@cn.mrs
-            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/google@cn.mrs"
+            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/google@cn.mrs"
         icloud:
             type: http
             format: mrs
             interval: 86400
             behavior: domain
             path: ./ruleset/icloud.mrs
-            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/icloud.mrs"
+            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/icloud.mrs"
         lancidr:
             type: http
             format: mrs
             interval: 86400
             behavior: ipcidr
             path: ./ruleset/lancidr.mrs
-            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/lancidr.mrs"
+            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/lancidr.mrs"
         private:
             type: http
             format: mrs
             interval: 86400
             behavior: domain
             path: ./ruleset/private.mrs
-            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/private.mrs"
+            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/private.mrs"
         proxy:
             type: http
             format: mrs
             interval: 86400
             behavior: domain
             path: ./ruleset/proxy.mrs
-            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/proxy.mrs"
+            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/proxy.mrs"
         telegramcidr:
             type: http
             format: mrs
             interval: 86400
             behavior: ipcidr
             path: ./ruleset/telegramcidr.mrs
-            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/telegramcidr.mrs"
+            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/telegramcidr.mrs"
         tld-!cn:
             type: http
             format: mrs
             interval: 86400
             behavior: domain
             path: ./ruleset/tld-!cn.mrs
-            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@release/tld-!cn.mrs"
+            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/tld-!cn.mrs"
     ```
 
 - The following is an example of routing rules in the configuration, for reference only.
@@ -124,7 +124,7 @@ This repository is a fundamental and vital component of [Project META](https://g
     - RULE-SET,applications,DIRECT
     - RULE-SET,lancidr,DIRECT
     - RULE-SET,private,DIRECT
-    - RULE-SET,ads,REJECT
+    - RULE-SET,reject,REJECT
     - RULE-SET,icloud,DIRECT
     - RULE-SET,apple@cn,DIRECT
     - RULE-SET,google@cn,PROXY
