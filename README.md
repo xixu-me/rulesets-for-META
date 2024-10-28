@@ -31,13 +31,6 @@ This repository is a fundamental and vital component of [Project META](https://g
 
     ```yaml
     rule-providers:
-        reject:
-            type: http
-            format: mrs
-            interval: 86400
-            behavior: domain
-            path: ./ruleset/reject.mrs
-            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/reject.mrs"
         apple@cn:
             type: http
             format: mrs
@@ -101,6 +94,13 @@ This repository is a fundamental and vital component of [Project META](https://g
             behavior: domain
             path: ./ruleset/proxy.mrs
             url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/proxy.mrs"
+        reject:
+            type: http
+            format: mrs
+            interval: 86400
+            behavior: domain
+            path: ./ruleset/reject.mrs
+            url: "https://cdn.jsdelivr.net/gh/Project-META/rules-mrs@basic/reject.mrs"
         telegramcidr:
             type: http
             format: mrs
