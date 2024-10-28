@@ -206,6 +206,7 @@ jobs:
           echo "CN_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/cn.txt" >> $GITHUB_ENV
           echo "LAN_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/private.txt" >> $GITHUB_ENV
           echo "CLOUDFLARE_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/cloudflare.txt" >> $GITHUB_ENV
+          echo "CLOUDFRONT_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/cloudfront.txt" >> $GITHUB_ENV
           echo "TELEGRAM_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/telegram.txt" >> $GITHUB_ENV
           echo "FACEBOOK_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/facebook.txt" >> $GITHUB_ENV
           echo "FASTLY_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/fastly.txt" >> $GITHUB_ENV
