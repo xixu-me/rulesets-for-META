@@ -205,7 +205,13 @@ jobs:
           echo "FELIXONMARS_GOOGLEATCN=https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/google.china.conf" >> $GITHUB_ENV
           echo "CN_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/cn.txt" >> $GITHUB_ENV
           echo "LAN_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/private.txt" >> $GITHUB_ENV
+          echo "CLOUDFLARE_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/cloudflare.txt" >> $GITHUB_ENV
           echo "TELEGRAM_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/telegram.txt" >> $GITHUB_ENV
+          echo "FACEBOOK_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/facebook.txt" >> $GITHUB_ENV
+          echo "FASTLY_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/fastly.txt" >> $GITHUB_ENV
+          echo "GOOGLE_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/google.txt" >> $GITHUB_ENV
+          echo "NETFLIX_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/netflix.txt" >> $GITHUB_ENV
+          echo "X_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/twitter.txt" >> $GITHUB_ENV
           echo "APPLICATIONS=https://raw.githubusercontent.com/Loyalsoldier/clash-rules/hidden/applications.txt" >> $GITHUB_ENV
         shell: bash
 
@@ -351,8 +357,22 @@ jobs:
           curl -sSL ${CUSTOM_TLD_NOTCN} | perl -ne '/^domain:([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - +.$1\n"' >> tld-!cn.yaml
           echo "payload:" > cncidr.yaml
           curl -sSL ${CN_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> cncidr.yaml
+          echo "payload:" > cloudflarecidr.yaml
+          curl -sSL ${CLOUDFLARE_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> cloudflarecidr.yaml
+          echo "payload:" > cloudfrontcidr.yaml
+          curl -sSL ${CLOUDFRONT_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> cloudfrontcidr.yaml
+          echo "payload:" > facebookcidr.yaml
+          curl -sSL ${FACEBOOK_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> facebookcidr.yaml
+          echo "payload:" > fastlycidr.yaml
+          curl -sSL ${FASTLY_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> fastlycidr.yaml
+          echo "payload:" > googlecidr.yaml
+          curl -sSL ${GOOGLE_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> googlecidr.yaml
+          echo "payload:" > netflixcidr.yaml
+          curl -sSL ${NETFLIX_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> netflixcidr.yaml
           echo "payload:" > telegramcidr.yaml
           curl -sSL ${TELEGRAM_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> telegramcidr.yaml
+          echo "payload:" > xcidr.yaml
+          curl -sSL ${X_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> xcidr.yaml
           echo "payload:" > lancidr.yaml
           curl -sSL ${LAN_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> lancidr.yaml
 
@@ -476,8 +496,8 @@ jobs:
 
       - name: Convert to MRS format
         run: |
-          files=(apple@cn direct gfw google@cn greatfire icloud private proxy reject tld-!cn cncidr lancidr telegramcidr)
-          cidr_files=(cncidr lancidr telegramcidr)
+          files=(apple@cn direct gfw google@cn greatfire icloud private proxy reject tld-!cn cncidr lancidr cloudflarecidr cloudfrontcidr facebookcidr fastlycidr googlecidr netflixcidr telegramcidr xcidr)
+          cidr_files=(cncidr lancidr cloudflarecidr cloudfrontcidr facebookcidr fastlycidr googlecidr netflixcidr telegramcidr xcidr)
           merged_files=(apple@cn direct gfw google@cn greatfire icloud proxy reject)
           for file in ${files[@]}; do
             if [[ " ${merged_files[*]} " =~ " ${file} " ]]; then
