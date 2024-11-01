@@ -1,580 +1,581 @@
 name: Build and Publish
 
 on:
-    workflow_dispatch:
-    schedule:
-        - cron: "20 2,6,10,14,18,22 * * *"
-    push:
-        branches:
-            - main
-        paths-ignore:
-            - "**/README.md"
+  workflow_dispatch:
+  schedule:
+    - cron: "20 2,6,10,14,18,22 * * *"
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "**/README.md"
 
 jobs:
-    build-and-publish-universal-rulesets:
-        runs-on: ubuntu-latest
+  build-and-publish-universal-rulesets:
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Set environment variables
-              run: |
-                  echo "GOAMD64=v3" >> $GITHUB_ENV
-                  echo "BUILD_TIME=$(date +%Y%m%d%H%M)" >> $GITHUB_ENV
-                  echo "CHINA_DOMAINS_URL=https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaMax/ChinaMax_Domain.txt" >> $GITHUB_ENV
-                  echo "GOOGLEATCN_DOMAINS_URL=https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/google.china.conf" >> $GITHUB_ENV
-                  echo "APPLEATCN_DOMAINS_URL=https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf" >> $GITHUB_ENV
-                  echo "CUSTOM_PROXY=https://raw.githubusercontent.com/Loyalsoldier/domain-list-custom/release/geolocation-!cn.txt" >> $GITHUB_ENV
-                  echo "WIN_SPY=https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt" >> $GITHUB_ENV
-                  echo "WIN_UPDATE=https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/update.txt" >> $GITHUB_ENV
-                  echo "WIN_EXTRA=https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/extra.txt" >> $GITHUB_ENV
-                  echo "NEED_TO_REMOVE_URL=https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/master/resouces" >> $GITHUB_ENV
-              shell: bash
+    steps:
+      - name: Set environment variables
+        run: |
+          echo "GOAMD64=v3" >> $GITHUB_ENV
+          echo "BUILD_TIME=$(date +%Y%m%d%H%M)" >> $GITHUB_ENV
+          echo "CHINA_DOMAINS_URL=https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaMax/ChinaMax_Domain.txt" >> $GITHUB_ENV
+          echo "GOOGLEATCN_DOMAINS_URL=https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/google.china.conf" >> $GITHUB_ENV
+          echo "APPLEATCN_DOMAINS_URL=https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf" >> $GITHUB_ENV
+          echo "CUSTOM_PROXY=https://raw.githubusercontent.com/Loyalsoldier/domain-list-custom/release/geolocation-!cn.txt" >> $GITHUB_ENV
+          echo "WIN_SPY=https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt" >> $GITHUB_ENV
+          echo "WIN_UPDATE=https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/update.txt" >> $GITHUB_ENV
+          echo "WIN_EXTRA=https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/extra.txt" >> $GITHUB_ENV
+          echo "NEED_TO_REMOVE_URL=https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/master/resouces" >> $GITHUB_ENV
+        shell: bash
 
-            - name: Checkout repositories
-              uses: actions/checkout@v4
-            - uses: actions/checkout@v4
-              with:
-                  repository: Loyalsoldier/domain-list-custom
-                  path: custom
-            - uses: actions/checkout@v4
-              with:
-                  repository: v2fly/domain-list-community
-                  path: community
-            - uses: actions/checkout@v4
-              with:
-                  repository: Project-META/rules-converter
-                  path: converter
-            - uses: actions/checkout@v4
-              with:
-                  repository: cokebar/gfwlist2dnsmasq
-                  path: gfwlist2dnsmasq
+      - name: Checkout repositories
+        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: Loyalsoldier/domain-list-custom
+          path: custom
+      - uses: actions/checkout@v4
+        with:
+          repository: v2fly/domain-list-community
+          path: community
+      - uses: actions/checkout@v4
+        with:
+          repository: Project-META/rules-converter
+          token: ${{ secrets.PAT }}
+          path: converter
+      - uses: actions/checkout@v4
+        with:
+          repository: cokebar/gfwlist2dnsmasq
+          path: gfwlist2dnsmasq
 
-            - name: Setup Go
-              uses: actions/setup-go@v5
-              with:
-                  go-version: "1.22"
-                  cache-dependency-path: ./custom/go.sum
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache-dependency-path: ./custom/go.sum
 
-            - name: Generate and process domain lists
-              run: |
-                  # Generate GFWList domains
-                  cd gfwlist2dnsmasq && chmod +x ./gfwlist2dnsmasq.sh && ./gfwlist2dnsmasq.sh -l -o ./temp-gfwlist.txt && cd ..
-                  # Fetch and process direct domains
-                  curl -sSL ${CHINA_DOMAINS_URL} | sed '/^\s*#/d' | sed '/^[^\.]/ s/^/full:/' |  sed 's/^\.\([^.]*\)/\1/' > temp-direct.txt
-                  # Fetch and process proxy domains
-                  cat ./gfwlist2dnsmasq/temp-gfwlist.txt | perl -ne '/^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/ && print "$1\n"' > temp-proxy.txt
-                  curl -sSL $GOOGLEATCN_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "$1\n"' >> temp-proxy.txt
-                  curl -sSL $APPLEATCN_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "$1\n"' >> temp-proxy.txt
-                  curl -sSL ${CUSTOM_PROXY} | grep -Ev ":@cn" | perl -ne '/^(domain):([^:]+)(\n$|:@.+)/ && print "$2\n"' >> temp-proxy.txt
-                  # Extract special rule types
-                  curl -sSL ${CUSTOM_PROXY} | grep -Ev ":@cn" | perl -ne '/^((full|regexp|keyword):[^:]+)(\n$|:@.+)/ && print "$1\n"' | sort --ignore-case -u > proxy-reserve.txt
+      - name: Generate and process domain lists
+        run: |
+          # Generate GFWList domains
+          cd gfwlist2dnsmasq && chmod +x ./gfwlist2dnsmasq.sh && ./gfwlist2dnsmasq.sh -l -o ./temp-gfwlist.txt && cd ..
+          # Fetch and process direct domains
+          curl -sSL ${CHINA_DOMAINS_URL} | sed '/^\s*#/d' | sed '/^[^\.]/ s/^/full:/' |  sed 's/^\.\([^.]*\)/\1/' > temp-direct.txt
+          # Fetch and process proxy domains
+          cat ./gfwlist2dnsmasq/temp-gfwlist.txt | perl -ne '/^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/ && print "$1\n"' > temp-proxy.txt
+          curl -sSL $GOOGLEATCN_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "$1\n"' >> temp-proxy.txt
+          curl -sSL $APPLEATCN_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "$1\n"' >> temp-proxy.txt
+          curl -sSL ${CUSTOM_PROXY} | grep -Ev ":@cn" | perl -ne '/^(domain):([^:]+)(\n$|:@.+)/ && print "$2\n"' >> temp-proxy.txt
+          # Extract special rule types
+          curl -sSL ${CUSTOM_PROXY} | grep -Ev ":@cn" | perl -ne '/^((full|regexp|keyword):[^:]+)(\n$|:@.+)/ && print "$1\n"' | sort --ignore-case -u > proxy-reserve.txt
 
-            - name: Sort and remove redundant domains
-              run: |
-                  cat temp-proxy.txt | sort --ignore-case -u > proxy-list-with-redundant
-                  cat temp-direct.txt | sort --ignore-case -u > direct-list-with-redundant
-                  chmod +x ./scripts/*.py
-                  python ./scripts/find_redundant_domain.py ./direct-list-with-redundant ./direct-list-deleted-unsort
-                  python ./scripts/find_redundant_domain.py ./proxy-list-with-redundant ./proxy-list-deleted-unsort
-                  [ ! -f "direct-list-deleted-unsort" ] && touch direct-list-deleted-unsort
-                  [ ! -f "proxy-list-deleted-unsort" ] && touch proxy-list-deleted-unsort
-                  sort ./direct-list-deleted-unsort > ./direct-list-deleted-sort
-                  sort ./proxy-list-deleted-unsort > ./proxy-list-deleted-sort
-                  python ./scripts/remove_from.py -remove ./direct-list-deleted-sort -from ./direct-list-with-redundant -out direct-list-without-redundant
-                  python ./scripts/remove_from.py -remove ./proxy-list-deleted-sort -from ./proxy-list-with-redundant -out proxy-list-without-redundant
+      - name: Sort and remove redundant domains
+        run: |
+          cat temp-proxy.txt | sort --ignore-case -u > proxy-list-with-redundant
+          cat temp-direct.txt | sort --ignore-case -u > direct-list-with-redundant
+          chmod +x ./scripts/*.py
+          python ./scripts/find_redundant_domain.py ./direct-list-with-redundant ./direct-list-deleted-unsort
+          python ./scripts/find_redundant_domain.py ./proxy-list-with-redundant ./proxy-list-deleted-unsort
+          [ ! -f "direct-list-deleted-unsort" ] && touch direct-list-deleted-unsort
+          [ ! -f "proxy-list-deleted-unsort" ] && touch proxy-list-deleted-unsort
+          sort ./direct-list-deleted-unsort > ./direct-list-deleted-sort
+          sort ./proxy-list-deleted-unsort > ./proxy-list-deleted-sort
+          python ./scripts/remove_from.py -remove ./direct-list-deleted-sort -from ./direct-list-with-redundant -out direct-list-without-redundant
+          python ./scripts/remove_from.py -remove ./proxy-list-deleted-sort -from ./proxy-list-with-redundant -out proxy-list-without-redundant
 
-            - name: Remove domains from exclusion lists
-              run: |
-                  curl -sSL ${NEED_TO_REMOVE_URL}/direct-need-to-remove.txt > ./scripts/direct-need-to-remove.txt
-                  curl -sSL ${NEED_TO_REMOVE_URL}/proxy-need-to-remove.txt > ./scripts/proxy-need-to-remove.txt
-                  python ./scripts/remove_from.py -remove ./scripts/direct-need-to-remove.txt -from ./direct-list-without-redundant -out ./temp-cn.txt
-                  python ./scripts/remove_from.py -remove ./scripts/proxy-need-to-remove.txt -from ./proxy-list-without-redundant -out ./temp-geolocation-\!cn.txt
+      - name: Remove domains from exclusion lists
+        run: |
+          curl -sSL ${NEED_TO_REMOVE_URL}/direct-need-to-remove.txt > ./scripts/direct-need-to-remove.txt
+          curl -sSL ${NEED_TO_REMOVE_URL}/proxy-need-to-remove.txt > ./scripts/proxy-need-to-remove.txt
+          python ./scripts/remove_from.py -remove ./scripts/direct-need-to-remove.txt -from ./direct-list-without-redundant -out ./temp-cn.txt
+          python ./scripts/remove_from.py -remove ./scripts/proxy-need-to-remove.txt -from ./proxy-list-without-redundant -out ./temp-geolocation-\!cn.txt
 
-            - name: Process and filter domain lists
-              run: |
-                  # Process Chinese domain list
-                  cat temp-cn.txt | grep -v google | grep -v manhua | grep -v ooklaserver | grep -v "acg.rip" | sort --ignore-case -u | perl -ne '/^((?=^.{1,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})*)/ && print "$1\n"' > ./community/data/cn
-                  # Generate direct TLD list
-                  cat temp-cn.txt | sort --ignore-case -u | perl -ne 'print if not /^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/' > direct-tld-list.txt
-                  # Process non-Chinese geolocation domain list
-                  cat temp-geolocation-\!cn.txt | sort --ignore-case -u | perl -ne '/^((?=^.{1,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})*)/ && print "$1\n"' | perl -ne 'print if not /\.cn$/' > ./community/data/geolocation-\!cn
-                  # Generate proxy TLD list
-                  cat temp-geolocation-\!cn.txt | sort --ignore-case -u | perl -ne 'print if not /^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/' > proxy-tld-list.txt
+      - name: Process and filter domain lists
+        run: |
+          # Process Chinese domain list
+          cat temp-cn.txt | grep -v google | grep -v manhua | grep -v ooklaserver | grep -v "acg.rip" | sort --ignore-case -u | perl -ne '/^((?=^.{1,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})*)/ && print "$1\n"' > ./community/data/cn
+          # Generate direct TLD list
+          cat temp-cn.txt | sort --ignore-case -u | perl -ne 'print if not /^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/' > direct-tld-list.txt
+          # Process non-Chinese geolocation domain list
+          cat temp-geolocation-\!cn.txt | sort --ignore-case -u | perl -ne '/^((?=^.{1,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})*)/ && print "$1\n"' | perl -ne 'print if not /\.cn$/' > ./community/data/geolocation-\!cn
+          # Generate proxy TLD list
+          cat temp-geolocation-\!cn.txt | sort --ignore-case -u | perl -ne 'print if not /^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/' > proxy-tld-list.txt
 
-            - name: Add special rule types and create additional lists
-              run: |
-                  [ -f "direct-reserve.txt" ] && cat direct-reserve.txt >> ./community/data/cn
-                  [ -f "proxy-reserve.txt" ] && cat proxy-reserve.txt >> ./community/data/geolocation-\!cn
-                  cp ./community/data/cn direct-list.txt
-                  cp ./community/data/geolocation-\!cn proxy-list.txt
-                  # Create additional lists
-                  curl -sSL $GOOGLEATCN_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "full:$1\n"' > ./community/data/google-cn
-                  curl -sSL $APPLEATCN_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "full:$1\n"' > ./community/data/apple-cn
-                  cat ./gfwlist2dnsmasq/temp-gfwlist.txt | perl -ne '/^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/ && print "$1\n"' >> ./community/data/gfw
-                  curl -sSL $WIN_SPY | grep "0.0.0.0" | awk '{print $2}' > ./community/data/win-spy
-                  curl -sSL $WIN_UPDATE | grep "0.0.0.0" | awk '{print $2}' > ./community/data/win-update
-                  curl -sSL $WIN_EXTRA | grep "0.0.0.0" | awk '{print $2}' > ./community/data/win-extra
+      - name: Add special rule types and create additional lists
+        run: |
+          [ -f "direct-reserve.txt" ] && cat direct-reserve.txt >> ./community/data/cn
+          [ -f "proxy-reserve.txt" ] && cat proxy-reserve.txt >> ./community/data/geolocation-\!cn
+          cp ./community/data/cn direct-list.txt
+          cp ./community/data/geolocation-\!cn proxy-list.txt
+          # Create additional lists
+          curl -sSL $GOOGLEATCN_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "full:$1\n"' > ./community/data/google-cn
+          curl -sSL $APPLEATCN_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "full:$1\n"' > ./community/data/apple-cn
+          cat ./gfwlist2dnsmasq/temp-gfwlist.txt | perl -ne '/^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/ && print "$1\n"' >> ./community/data/gfw
+          curl -sSL $WIN_SPY | grep "0.0.0.0" | awk '{print $2}' > ./community/data/win-spy
+          curl -sSL $WIN_UPDATE | grep "0.0.0.0" | awk '{print $2}' > ./community/data/win-update
+          curl -sSL $WIN_EXTRA | grep "0.0.0.0" | awk '{print $2}' > ./community/data/win-extra
 
-            - name: Merge additional lists
-              env:
-                  SED: sed '/^\s*#/d' | sed 's/^PROCESS-NAME,//' | sed 's/DOMAIN,/full:/g' | sed 's/DOMAIN-SUFFIX,//g' | sed 's/DOMAIN-KEYWORD,/keyword:/g' | sed '/^\s*IP-CIDR/d'
-              run: |
-                  # Merge SteamCN list
-                  curl -sSL https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/SteamCN/SteamCN.list | ${{ env.SED }} > steamcn.txt
-                  while read line; do grep -q "$line @cn" ./community/data/steam || sed -i "/$line/ s/$/ @cn/" ./community/data/steam; done < steamcn.txt
-                  # Merge other lists
-                  curl -sSL https://raw.githubusercontent.com/xishang0128/rules/main/biliintl.list > ./community/data/biliintl
-                  curl -sSL https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/OneDrive/OneDrive.list | ${{ env.SED }} > ./community/data/onedrive
-                  echo "sharepoint.cn" >> ./community/data/onedrive 
-                  curl -sSL https://raw.githubusercontent.com/xishang0128/rules/main/sharepoint.list > ./community/data/sharepoint
-                  curl -sSL https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/PrivateTracker/PrivateTracker.list | ${{ env.SED }} > ./community/data/tracker
-                  curl -sSL https://github.com/XIU2/TrackersListCollection/raw/refs/heads/master/all.txt | grep -i "\.[A-Z]" | grep -v tracker | sed 's/^.*\/\///g' | sed 's/:.*\/.*//g' >> ./community/data/tracker
-                  curl -sSL https://github.com/blackmatrix7/ios_rule_script/raw/master/rule/Clash/BlockHttpDNS/BlockHttpDNS.list | ${{ env.SED }} > ./community/data/httpdns
+      - name: Merge additional lists
+        env:
+          SED: sed '/^\s*#/d' | sed 's/DOMAIN,//g' | sed 's/DOMAIN-SUFFIX,//g' | sed 's/DOMAIN-KEYWORD,/keyword:/g'
+        run: |
+          # Merge SteamCN list
+          curl -sSL https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/SteamCN/SteamCN.list | ${{ env.SED }} > steamcn.txt
+          while read line; do grep -q "$line @cn" ./community/data/steam || sed -i "/$line/ s/$/ @cn/" ./community/data/steam; done < steamcn.txt
+          # Merge other lists
+          curl -sSL https://raw.githubusercontent.com/xishang0128/rules/main/biliintl.list > ./community/data/biliintl
+          curl -sSL https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/OneDrive/OneDrive.list | ${{ env.SED }} > ./community/data/onedrive
+          echo "sharepoint.cn" >> ./community/data/onedrive 
+          curl -sSL https://raw.githubusercontent.com/xishang0128/rules/main/sharepoint.list > ./community/data/sharepoint
+          curl -sSL https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/PrivateTracker/PrivateTracker.list | ${{ env.SED }} > ./community/data/tracker
+          curl -sSL https://gitea.com/XIU2/TrackersListCollection/raw/branch/master/all.txt | grep -i "\.[A-Z]" | grep -v tracker | sed 's/^.*\/\///g' | sed 's/:.*\/.*//g' >> ./community/data/tracker
+          curl -sSL https://github.com/blackmatrix7/ios_rule_script/raw/master/rule/Clash/BlockHttpDNS/BlockHttpDNS.list | ${{ env.SED }} > ./community/data/httpdns
 
-            - name: Generate rulesets in YAML and MRS format
-              run: |
-                  cd custom
-                  echo ipleak.net >> ../community/data/geolocation-\!cn && echo browserleaks.org >> ../community/data/geolocation-\!cn
-                  go run ./ --datapath=../community/data
-                  cd ../converter
-                  mkdir -p ../converted
-                  go run ./ geosite -f ../custom/publish/geosite.dat -o ../converted
-                  mkdir -p ../publish
-                  cp ../converted/*.mrs ../publish/
-                  mkdir -p ../publish/yaml
-                  cp ../converted/*.yaml ../publish/yaml/
+      - name: Generate rulesets in YAML and MRS format
+        run: |
+          cd custom
+          echo ipleak.net >> ../community/data/geolocation-\!cn && echo browserleaks.org >> ../community/data/geolocation-\!cn
+          go run ./ --datapath=../community/data
+          cd ../converter
+          mkdir -p ../converted
+          go run ./ geosite -f ../custom/publish/geosite.dat -o ../converted
+          mkdir -p ../publish
+          cp ../converted/*.mrs ../publish/
+          mkdir -p ../publish/yaml
+          cp ../converted/*.yaml ../publish/yaml/
 
-            - name: Push generated rulesets
-              run: |
-                  git config --global user.name "github-actions[bot]"
-                  git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-                  REPO_URL="https://github-actions[bot]:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
-                  cd publish
-                  git init
-                  git checkout -b universal
-                  git add .
-                  git commit -m "Released on ${{ env.BUILD_TIME }}"
-                  git remote add origin "${REPO_URL}"
-                  git push -f -u origin universal
+      - name: Push generated rulesets
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          REPO_URL="https://github-actions[bot]:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
+          cd publish
+          git init
+          git checkout -b universal
+          git add .
+          git commit -m "Released on ${{ env.BUILD_TIME }}"
+          git remote add origin "${REPO_URL}"
+          git push -f -u origin universal
 
-            - name: Prepare and upload rulesets
-              run: |
-                  mkdir -p to-be-merged
-                  files=(apple@cn cn gfw google@cn greatfire icloud geolocation-!cn category-ads-all)
-                  for file in ${files[@]}; do
-                    cp publish/yaml/${file}.yaml to-be-merged/
-                  done
-                  cp to-be-merged/cn.yaml to-be-merged/direct.yaml
-                  cp to-be-merged/geolocation-!cn.yaml to-be-merged/proxy.yaml
-                  cp to-be-merged/category-ads-all.yaml to-be-merged/reject.yaml
-                  rm to-be-merged/cn.yaml to-be-merged/geolocation-!cn.yaml to-be-merged/category-ads-all.yaml
+      - name: Prepare and upload rulesets
+        run: |
+          mkdir -p to-be-merged
+          files=(apple@cn cn gfw google@cn greatfire icloud geolocation-!cn category-ads-all)
+          for file in ${files[@]}; do
+            cp publish/yaml/${file}.yaml to-be-merged/
+          done
+          cp to-be-merged/cn.yaml to-be-merged/direct.yaml
+          cp to-be-merged/geolocation-!cn.yaml to-be-merged/proxy.yaml
+          cp to-be-merged/category-ads-all.yaml to-be-merged/reject.yaml
+          rm to-be-merged/cn.yaml to-be-merged/geolocation-!cn.yaml to-be-merged/category-ads-all.yaml
 
-            - name: Upload built rulesets
-              uses: actions/upload-artifact@v4
-              with:
-                  name: universal
-                  path: to-be-merged
+      - name: Upload built rulesets
+        uses: actions/upload-artifact@v4
+        with:
+          name: universal
+          path: to-be-merged
 
-    build-basic-rulesets:
-        runs-on: ubuntu-latest
+  build-basic-rulesets:
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Set environment variables
-              run: |
-                  echo "CHINA_DOMAINS_URL=https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf" >> $GITHUB_ENV
-                  echo "GOOGLEATCN_DOMAINS_URL=https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/google.china.conf" >> $GITHUB_ENV
-                  echo "APPLEATCN_DOMAINS_URL=https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf" >> $GITHUB_ENV
-                  echo "EASYLIST_REJECT_URL=https://easylist-downloads.adblockplus.org/easylist.txt" >> $GITHUB_ENV
-                  echo "EASYLIST_CHINA_REJECT_URL=https://easylist-downloads.adblockplus.org/easylistchina.txt" >> $GITHUB_ENV
-                  echo "EASYPRIVACY_REJECT_URL=https://easylist-downloads.adblockplus.org/easyprivacy.txt" >> $GITHUB_ENV
-                  echo "CJXS_ANNOYANCE_LIST_REJECT_URL=https://raw.githubusercontent.com/cjx82630/cjxlist/master/cjx-annoyance.txt" >> $GITHUB_ENV
-                  echo "ABP_REJECT_URL=https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt" >> $GITHUB_ENV
-                  echo "SPAM404_REJECT_URL=https://raw.githubusercontent.com/Spam404/lists/master/adblock-list.txt" >> $GITHUB_ENV
-                  echo "CPBL_REJECT_URL=https://raw.githubusercontent.com/bongochong/CombinedPrivacyBlockLists/master/cpbl-abp-list.txt" >> $GITHUB_ENV
-                  echo "NOCOIN_REJECT_URL=https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/nocoin.txt" >> $GITHUB_ENV
-                  echo "FANBOYS_SOCIAL_REJECT_URL=https://easylist-downloads.adblockplus.org/fanboy-social.txt" >> $GITHUB_ENV
-                  echo "PETERLOWE_REJECT_URL=https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=1&mimetype=plaintext" >> $GITHUB_ENV
-                  echo "ADGUARD_DNS_REJECT_URL=https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt" >> $GITHUB_ENV
-                  echo "DANPOLLOCK_REJECT_URL=https://someonewhocares.org/hosts/hosts" >> $GITHUB_ENV
-                  echo "URLHAUS_REJECT_URL=https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-hosts.txt" >> $GITHUB_ENV
-                  echo "CUSTOM_DIRECT=https://raw.githubusercontent.com/Loyalsoldier/domain-list-custom/release/cn.txt" >> $GITHUB_ENV
-                  echo "CUSTOM_PROXY=https://raw.githubusercontent.com/Loyalsoldier/domain-list-custom/release/geolocation-!cn.txt" >> $GITHUB_ENV
-                  echo "CUSTOM_ICLOUD=https://raw.githubusercontent.com/Loyalsoldier/domain-list-custom/release/icloud.txt" >> $GITHUB_ENV
-                  echo "CUSTOM_TLD_NOTCN=https://raw.githubusercontent.com/Loyalsoldier/domain-list-custom/release/tld-!cn.txt" >> $GITHUB_ENV
-                  echo "CUSTOM_PRIVATE=https://raw.githubusercontent.com/Loyalsoldier/domain-list-custom/release/private.txt" >> $GITHUB_ENV
-                  echo "FELIXONMARS_APPLEATCN=https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf" >> $GITHUB_ENV
-                  echo "FELIXONMARS_GOOGLEATCN=https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/google.china.conf" >> $GITHUB_ENV
-                  echo "CN_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/cn.txt" >> $GITHUB_ENV
-                  echo "LAN_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/private.txt" >> $GITHUB_ENV
-                  echo "CLOUDFLARE_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/cloudflare.txt" >> $GITHUB_ENV
-                  echo "CLOUDFRONT_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/cloudfront.txt" >> $GITHUB_ENV
-                  echo "TELEGRAM_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/telegram.txt" >> $GITHUB_ENV
-                  echo "FACEBOOK_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/facebook.txt" >> $GITHUB_ENV
-                  echo "FASTLY_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/fastly.txt" >> $GITHUB_ENV
-                  echo "GOOGLE_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/google.txt" >> $GITHUB_ENV
-                  echo "NETFLIX_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/netflix.txt" >> $GITHUB_ENV
-                  echo "X_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/twitter.txt" >> $GITHUB_ENV
-                  echo "APPLICATIONS=https://raw.githubusercontent.com/Loyalsoldier/clash-rules/hidden/applications.txt" >> $GITHUB_ENV
-              shell: bash
+    steps:
+      - name: Set environment variables
+        run: |
+          echo "CHINA_DOMAINS_URL=https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf" >> $GITHUB_ENV
+          echo "GOOGLEATCN_DOMAINS_URL=https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/google.china.conf" >> $GITHUB_ENV
+          echo "APPLEATCN_DOMAINS_URL=https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf" >> $GITHUB_ENV
+          echo "EASYLIST_REJECT_URL=https://easylist-downloads.adblockplus.org/easylist.txt" >> $GITHUB_ENV
+          echo "EASYLIST_CHINA_REJECT_URL=https://easylist-downloads.adblockplus.org/easylistchina.txt" >> $GITHUB_ENV
+          echo "EASYPRIVACY_REJECT_URL=https://easylist-downloads.adblockplus.org/easyprivacy.txt" >> $GITHUB_ENV
+          echo "CJXS_ANNOYANCE_LIST_REJECT_URL=https://raw.githubusercontent.com/cjx82630/cjxlist/master/cjx-annoyance.txt" >> $GITHUB_ENV
+          echo "ABP_REJECT_URL=https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt" >> $GITHUB_ENV
+          echo "SPAM404_REJECT_URL=https://raw.githubusercontent.com/Spam404/lists/master/adblock-list.txt" >> $GITHUB_ENV
+          echo "CPBL_REJECT_URL=https://raw.githubusercontent.com/bongochong/CombinedPrivacyBlockLists/master/cpbl-abp-list.txt" >> $GITHUB_ENV
+          echo "NOCOIN_REJECT_URL=https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/nocoin.txt" >> $GITHUB_ENV
+          echo "FANBOYS_SOCIAL_REJECT_URL=https://easylist-downloads.adblockplus.org/fanboy-social.txt" >> $GITHUB_ENV
+          echo "PETERLOWE_REJECT_URL=https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=1&mimetype=plaintext" >> $GITHUB_ENV
+          echo "ADGUARD_DNS_REJECT_URL=https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt" >> $GITHUB_ENV
+          echo "DANPOLLOCK_REJECT_URL=https://someonewhocares.org/hosts/hosts" >> $GITHUB_ENV
+          echo "URLHAUS_REJECT_URL=https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-hosts.txt" >> $GITHUB_ENV
+          echo "CUSTOM_DIRECT=https://raw.githubusercontent.com/Loyalsoldier/domain-list-custom/release/cn.txt" >> $GITHUB_ENV
+          echo "CUSTOM_PROXY=https://raw.githubusercontent.com/Loyalsoldier/domain-list-custom/release/geolocation-!cn.txt" >> $GITHUB_ENV
+          echo "CUSTOM_ICLOUD=https://raw.githubusercontent.com/Loyalsoldier/domain-list-custom/release/icloud.txt" >> $GITHUB_ENV
+          echo "CUSTOM_TLD_NOTCN=https://raw.githubusercontent.com/Loyalsoldier/domain-list-custom/release/tld-!cn.txt" >> $GITHUB_ENV
+          echo "CUSTOM_PRIVATE=https://raw.githubusercontent.com/Loyalsoldier/domain-list-custom/release/private.txt" >> $GITHUB_ENV
+          echo "FELIXONMARS_APPLEATCN=https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf" >> $GITHUB_ENV
+          echo "FELIXONMARS_GOOGLEATCN=https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/google.china.conf" >> $GITHUB_ENV
+          echo "CN_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/cn.txt" >> $GITHUB_ENV
+          echo "LAN_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/private.txt" >> $GITHUB_ENV
+          echo "CLOUDFLARE_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/cloudflare.txt" >> $GITHUB_ENV
+          echo "CLOUDFRONT_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/cloudfront.txt" >> $GITHUB_ENV
+          echo "TELEGRAM_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/telegram.txt" >> $GITHUB_ENV
+          echo "FACEBOOK_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/facebook.txt" >> $GITHUB_ENV
+          echo "FASTLY_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/fastly.txt" >> $GITHUB_ENV
+          echo "GOOGLE_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/google.txt" >> $GITHUB_ENV
+          echo "NETFLIX_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/netflix.txt" >> $GITHUB_ENV
+          echo "X_CIDR=https://raw.githubusercontent.com/Loyalsoldier/geoip/release/text/twitter.txt" >> $GITHUB_ENV
+          echo "APPLICATIONS=https://raw.githubusercontent.com/Loyalsoldier/clash-rules/hidden/applications.txt" >> $GITHUB_ENV
+        shell: bash
 
-            - name: Checkout repositories
-              uses: actions/checkout@v4
-              with:
-                  repository: Loyalsoldier/v2ray-rules-dat
-                  ref: hidden
-                  path: .
-            - uses: actions/checkout@v4
-              with:
-                  repository: Loyalsoldier/domain-list-custom
-                  path: custom
-            - uses: actions/checkout@v4
-              with:
-                  repository: v2fly/domain-list-community
-                  path: community
-            - uses: actions/checkout@v4
-              with:
-                  repository: cokebar/gfwlist2dnsmasq
-                  path: gfwlist2dnsmasq
+      - name: Checkout repositories
+        uses: actions/checkout@v4
+        with:
+          repository: Loyalsoldier/v2ray-rules-dat
+          ref: hidden
+          path: .
+      - uses: actions/checkout@v4
+        with:
+          repository: Loyalsoldier/domain-list-custom
+          path: custom
+      - uses: actions/checkout@v4
+        with:
+          repository: v2fly/domain-list-community
+          path: community
+      - uses: actions/checkout@v4
+        with:
+          repository: cokebar/gfwlist2dnsmasq
+          path: gfwlist2dnsmasq
 
-            - name: Setup Go
-              uses: actions/setup-go@v5
-              with:
-                  go-version-file: ./custom/go.mod
-                  cache-dependency-path: ./custom/go.sum
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ./custom/go.mod
+          cache-dependency-path: ./custom/go.sum
 
-            - name: Fetch geoip.dat files
-              run: |
-                  wget https://github.com/Loyalsoldier/geoip/raw/release/geoip.dat
-                  wget https://github.com/Loyalsoldier/geoip/raw/release/geoip.dat.sha256sum
+      - name: Fetch geoip.dat files
+        run: |
+          wget https://github.com/Loyalsoldier/geoip/raw/release/geoip.dat
+          wget https://github.com/Loyalsoldier/geoip/raw/release/geoip.dat.sha256sum
 
-            - name: Generate and process domain lists
-              run: |
-                  # Generate GFWList domains
-                  cd gfwlist2dnsmasq && chmod +x ./gfwlist2dnsmasq.sh && ./gfwlist2dnsmasq.sh -l -o ./temp-gfwlist.txt && cd ..
-                  # Fetch and process direct domains
-                  curl -sSL $CHINA_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "$1\n"' > temp-direct.txt
-                  curl -sSL ${CUSTOM_DIRECT} | perl -ne '/^(domain):([^:]+)(\n$|:@.+)/ && print "$2\n"' >> temp-direct.txt
-                  # Fetch and process proxy domains
-                  cat ./gfwlist2dnsmasq/temp-gfwlist.txt | perl -ne '/^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/ && print "$1\n"' > temp-proxy.txt
-                  curl -sSL $GOOGLEATCN_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "$1\n"' >> temp-proxy.txt
-                  curl -sSL $APPLEATCN_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "$1\n"' >> temp-proxy.txt
-                  curl -sSL ${CUSTOM_PROXY} | grep -Ev ":@cn" | perl -ne '/^(domain):([^:]+)(\n$|:@.+)/ && print "$2\n"' >> temp-proxy.txt
-                  # Fetch and process reject domains
-                  curl -sSL $EASYLIST_REJECT_URL | perl -ne '/^\|\|([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})\^$/ && print "$1\n"' | perl -ne 'print if not /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/' > temp-reject.txt
-                  curl -sSL $EASYLIST_CHINA_REJECT_URL | perl -ne '/^\|\|([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})\^$/ && print "$1\n"' | perl -ne 'print if not /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/' >> temp-reject.txt
-                  curl -sSL $EASYPRIVACY_REJECT_URL | perl -ne '/^\|\|([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})\^$/ && print "$1\n"' | perl -ne 'print if not /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/' >> temp-reject.txt
-                  curl -sSL $CJXS_ANNOYANCE_LIST_REJECT_URL | perl -ne '/^\|\|([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})\^$/ && print "$1\n"' | perl -ne 'print if not /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/' >> temp-reject.txt
-                  curl -sSL $ABP_REJECT_URL | perl -ne '/^\|\|([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})\^$/ && print "$1\n"' | perl -ne 'print if not /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/' >> temp-reject.txt
-                  curl -sSL $SPAM404_REJECT_URL | perl -ne '/^\|\|([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})\^$/ && print "$1\n"' | perl -ne 'print if not /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/' >> temp-reject.txt
-                  curl -sSL $CPBL_REJECT_URL | perl -ne '/^\|\|([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})\^$/ && print "$1\n"' | perl -ne 'print if not /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/' >> temp-reject.txt
-                  curl -sSL $NOCOIN_REJECT_URL | perl -ne '/^\|\|([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})\^$/ && print "$1\n"' | perl -ne 'print if not /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/' >> temp-reject.txt
-                  curl -sSL $FANBOYS_SOCIAL_REJECT_URL | perl -ne '/^\|\|([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})\^$/ && print "$1\n"' | perl -ne 'print if not /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/' >> temp-reject.txt
-                  curl -sSL $ADGUARD_DNS_REJECT_URL | perl -ne '/^\|\|([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})\^$/ && print "$1\n"' | perl -ne 'print if not /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/' >> temp-reject.txt
-                  curl -sSL $PETERLOWE_REJECT_URL | perl -ne '/^127\.0\.0\.1\s([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})$/ && print "$1\n"' >> temp-reject.txt
-                  curl -sSL $DANPOLLOCK_REJECT_URL | perl -ne '/^127\.0\.0\.1\s([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})/ && print "$1\n"' | sed '1d' >> temp-reject.txt
-                  curl -sSL $URLHAUS_REJECT_URL | perl -ne '/^0\.0\.0\.0\s([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})$/ && print "$1\n"' >> temp-reject.txt
+      - name: Generate and process domain lists
+        run: |
+          # Generate GFWList domains
+          cd gfwlist2dnsmasq && chmod +x ./gfwlist2dnsmasq.sh && ./gfwlist2dnsmasq.sh -l -o ./temp-gfwlist.txt && cd ..
+          # Fetch and process direct domains
+          curl -sSL $CHINA_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "$1\n"' > temp-direct.txt
+          curl -sSL ${CUSTOM_DIRECT} | perl -ne '/^(domain):([^:]+)(\n$|:@.+)/ && print "$2\n"' >> temp-direct.txt
+          # Fetch and process proxy domains
+          cat ./gfwlist2dnsmasq/temp-gfwlist.txt | perl -ne '/^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/ && print "$1\n"' > temp-proxy.txt
+          curl -sSL $GOOGLEATCN_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "$1\n"' >> temp-proxy.txt
+          curl -sSL $APPLEATCN_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "$1\n"' >> temp-proxy.txt
+          curl -sSL ${CUSTOM_PROXY} | grep -Ev ":@cn" | perl -ne '/^(domain):([^:]+)(\n$|:@.+)/ && print "$2\n"' >> temp-proxy.txt
+          # Fetch and process reject domains
+          curl -sSL $EASYLIST_REJECT_URL | perl -ne '/^\|\|([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})\^$/ && print "$1\n"' | perl -ne 'print if not /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/' > temp-reject.txt
+          curl -sSL $EASYLIST_CHINA_REJECT_URL | perl -ne '/^\|\|([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})\^$/ && print "$1\n"' | perl -ne 'print if not /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/' >> temp-reject.txt
+          curl -sSL $EASYPRIVACY_REJECT_URL | perl -ne '/^\|\|([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})\^$/ && print "$1\n"' | perl -ne 'print if not /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/' >> temp-reject.txt
+          curl -sSL $CJXS_ANNOYANCE_LIST_REJECT_URL | perl -ne '/^\|\|([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})\^$/ && print "$1\n"' | perl -ne 'print if not /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/' >> temp-reject.txt
+          curl -sSL $ABP_REJECT_URL | perl -ne '/^\|\|([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})\^$/ && print "$1\n"' | perl -ne 'print if not /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/' >> temp-reject.txt
+          curl -sSL $SPAM404_REJECT_URL | perl -ne '/^\|\|([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})\^$/ && print "$1\n"' | perl -ne 'print if not /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/' >> temp-reject.txt
+          curl -sSL $CPBL_REJECT_URL | perl -ne '/^\|\|([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})\^$/ && print "$1\n"' | perl -ne 'print if not /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/' >> temp-reject.txt
+          curl -sSL $NOCOIN_REJECT_URL | perl -ne '/^\|\|([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})\^$/ && print "$1\n"' | perl -ne 'print if not /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/' >> temp-reject.txt
+          curl -sSL $FANBOYS_SOCIAL_REJECT_URL | perl -ne '/^\|\|([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})\^$/ && print "$1\n"' | perl -ne 'print if not /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/' >> temp-reject.txt
+          curl -sSL $ADGUARD_DNS_REJECT_URL | perl -ne '/^\|\|([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})\^$/ && print "$1\n"' | perl -ne 'print if not /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/' >> temp-reject.txt
+          curl -sSL $PETERLOWE_REJECT_URL | perl -ne '/^127\.0\.0\.1\s([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})$/ && print "$1\n"' >> temp-reject.txt
+          curl -sSL $DANPOLLOCK_REJECT_URL | perl -ne '/^127\.0\.0\.1\s([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})/ && print "$1\n"' | sed '1d' >> temp-reject.txt
+          curl -sSL $URLHAUS_REJECT_URL | perl -ne '/^0\.0\.0\.0\s([-_0-9a-zA-Z]+(\.[-_0-9a-zA-Z]+){1,64})$/ && print "$1\n"' >> temp-reject.txt
 
-            - name: Extract special rule types
-              run: |
-                  curl -sSL ${CUSTOM_DIRECT} | perl -ne '/^((full|regexp|keyword):[^:]+)(\n$|:@.+)/ && print "$1\n"' | sort --ignore-case -u > direct-reserve.txt
-                  curl -sSL ${CUSTOM_PROXY} | grep -Ev ":@cn" | perl -ne '/^((full|regexp|keyword):[^:]+)(\n$|:@.+)/ && print "$1\n"' | sort --ignore-case -u > proxy-reserve.txt
+      - name: Extract special rule types
+        run: |
+          curl -sSL ${CUSTOM_DIRECT} | perl -ne '/^((full|regexp|keyword):[^:]+)(\n$|:@.+)/ && print "$1\n"' | sort --ignore-case -u > direct-reserve.txt
+          curl -sSL ${CUSTOM_PROXY} | grep -Ev ":@cn" | perl -ne '/^((full|regexp|keyword):[^:]+)(\n$|:@.+)/ && print "$1\n"' | sort --ignore-case -u > proxy-reserve.txt
 
-            - name: Sort and remove redundant domains
-              run: |
-                  cat temp-proxy.txt | sort --ignore-case -u > proxy-list-with-redundant
-                  cat temp-direct.txt | sort --ignore-case -u > direct-list-with-redundant
-                  cat temp-reject.txt | sort --ignore-case -u > reject-list-with-redundant
-                  chmod +x findRedundantDomain.py
-                  ./findRedundantDomain.py ./direct-list-with-redundant ./direct-list-deleted-unsort
-                  ./findRedundantDomain.py ./proxy-list-with-redundant ./proxy-list-deleted-unsort
-                  ./findRedundantDomain.py ./reject-list-with-redundant ./reject-list-deleted-unsort
-                  [ ! -f "direct-list-deleted-unsort" ] && touch direct-list-deleted-unsort
-                  [ ! -f "proxy-list-deleted-unsort" ] && touch proxy-list-deleted-unsort
-                  [ ! -f "reject-list-deleted-unsort" ] && touch reject-list-deleted-unsort
-                  sort ./direct-list-deleted-unsort > ./direct-list-deleted-sort
-                  sort ./proxy-list-deleted-unsort > ./proxy-list-deleted-sort
-                  sort ./reject-list-deleted-unsort > ./reject-list-deleted-sort
-                  diff ./direct-list-deleted-sort ./direct-list-with-redundant | awk '/^>/{print $2}' > ./direct-list-without-redundant
-                  diff ./proxy-list-deleted-sort ./proxy-list-with-redundant | awk '/^>/{print $2}' > ./proxy-list-without-redundant
-                  diff ./reject-list-deleted-sort ./reject-list-with-redundant | awk '/^>/{print $2}' > ./reject-list-without-redundant
+      - name: Sort and remove redundant domains
+        run: |
+          cat temp-proxy.txt | sort --ignore-case -u > proxy-list-with-redundant
+          cat temp-direct.txt | sort --ignore-case -u > direct-list-with-redundant
+          cat temp-reject.txt | sort --ignore-case -u > reject-list-with-redundant
+          chmod +x findRedundantDomain.py
+          ./findRedundantDomain.py ./direct-list-with-redundant ./direct-list-deleted-unsort
+          ./findRedundantDomain.py ./proxy-list-with-redundant ./proxy-list-deleted-unsort
+          ./findRedundantDomain.py ./reject-list-with-redundant ./reject-list-deleted-unsort
+          [ ! -f "direct-list-deleted-unsort" ] && touch direct-list-deleted-unsort
+          [ ! -f "proxy-list-deleted-unsort" ] && touch proxy-list-deleted-unsort
+          [ ! -f "reject-list-deleted-unsort" ] && touch reject-list-deleted-unsort
+          sort ./direct-list-deleted-unsort > ./direct-list-deleted-sort
+          sort ./proxy-list-deleted-unsort > ./proxy-list-deleted-sort
+          sort ./reject-list-deleted-unsort > ./reject-list-deleted-sort
+          diff ./direct-list-deleted-sort ./direct-list-with-redundant | awk '/^>/{print $2}' > ./direct-list-without-redundant
+          diff ./proxy-list-deleted-sort ./proxy-list-with-redundant | awk '/^>/{print $2}' > ./proxy-list-without-redundant
+          diff ./reject-list-deleted-sort ./reject-list-with-redundant | awk '/^>/{print $2}' > ./reject-list-without-redundant
 
-            - name: Remove domains from exclusion lists
-              run: |
-                  diff ./direct-need-to-remove.txt ./direct-list-without-redundant | awk '/^>/{print $2}' > temp-cn.txt
-                  diff ./proxy-need-to-remove.txt ./proxy-list-without-redundant | awk '/^>/{print $2}' > temp-geolocation-\!cn.txt
-                  diff ./reject-need-to-remove.txt ./reject-list-without-redundant | awk '/^>/{print $2}' > temp-category-ads-all.txt
+      - name: Remove domains from exclusion lists
+        run: |
+          diff ./direct-need-to-remove.txt ./direct-list-without-redundant | awk '/^>/{print $2}' > temp-cn.txt
+          diff ./proxy-need-to-remove.txt ./proxy-list-without-redundant | awk '/^>/{print $2}' > temp-geolocation-\!cn.txt
+          diff ./reject-need-to-remove.txt ./reject-list-without-redundant | awk '/^>/{print $2}' > temp-category-ads-all.txt
 
-            - name: Process and filter domain lists
-              run: |
-                  cat temp-cn.txt | sort --ignore-case -u | perl -ne '/^((?=^.{1,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})*)/ && print "$1\n"' > ./community/data/cn
-                  cat temp-cn.txt | sort --ignore-case -u | perl -ne 'print if not /^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/' > direct-tld-list.txt
-                  cat temp-geolocation-\!cn.txt | sort --ignore-case -u | perl -ne '/^((?=^.{1,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})*)/ && print "$1\n"' > ./community/data/geolocation-\!cn
-                  cat temp-geolocation-\!cn.txt | sort --ignore-case -u | perl -ne 'print if not /^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/' > proxy-tld-list.txt
-                  cat temp-category-ads-all.txt | sort --ignore-case -u | perl -ne '/^((?=^.{1,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})*)/ && print "$1\n"' > ./community/data/category-ads-all
-                  cat temp-category-ads-all.txt | sort --ignore-case -u | perl -ne 'print if not /^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/' > reject-tld-list.txt
+      - name: Process and filter domain lists
+        run: |
+          cat temp-cn.txt | sort --ignore-case -u | perl -ne '/^((?=^.{1,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})*)/ && print "$1\n"' > ./community/data/cn
+          cat temp-cn.txt | sort --ignore-case -u | perl -ne 'print if not /^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/' > direct-tld-list.txt
+          cat temp-geolocation-\!cn.txt | sort --ignore-case -u | perl -ne '/^((?=^.{1,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})*)/ && print "$1\n"' > ./community/data/geolocation-\!cn
+          cat temp-geolocation-\!cn.txt | sort --ignore-case -u | perl -ne 'print if not /^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/' > proxy-tld-list.txt
+          cat temp-category-ads-all.txt | sort --ignore-case -u | perl -ne '/^((?=^.{1,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})*)/ && print "$1\n"' > ./community/data/category-ads-all
+          cat temp-category-ads-all.txt | sort --ignore-case -u | perl -ne 'print if not /^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/' > reject-tld-list.txt
 
-            - name: Add special rule types and create additional lists
-              run: |
-                  [ -f "direct-reserve.txt" ] && cat direct-reserve.txt >> ./community/data/cn
-                  [ -f "proxy-reserve.txt" ] && cat proxy-reserve.txt >> ./community/data/geolocation-\!cn
-                  [ -f "reject-reserve.txt" ] && cat reject-reserve.txt >> ./community/data/category-ads-all
-                  cp ./community/data/cn direct-list.txt
-                  cp ./community/data/geolocation-\!cn proxy-list.txt
-                  cp ./community/data/category-ads-all reject-list.txt
-                  # Create additional lists
-                  curl -sSL $CHINA_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "$1\n"' > ./community/data/china-list
-                  curl -sSL $CHINA_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "$1\n"' > china-list.txt
-                  curl -sSL $GOOGLEATCN_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "full:$1\n"' > ./community/data/google-cn
-                  curl -sSL $GOOGLEATCN_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "full:$1\n"' > google-cn.txt
-                  curl -sSL $APPLEATCN_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "full:$1\n"' > ./community/data/apple-cn
-                  curl -sSL $APPLEATCN_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "full:$1\n"' > apple-cn.txt
-                  cat ./gfwlist2dnsmasq/temp-gfwlist.txt | perl -ne '/^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/ && print "$1\n"' >> ./community/data/gfw
-                  cat ./community/data/gfw | sort --ignore-case -u > gfw.txt
-                  cat ./community/data/greatfire | sort --ignore-case -u > greatfire.txt
+      - name: Add special rule types and create additional lists
+        run: |
+          [ -f "direct-reserve.txt" ] && cat direct-reserve.txt >> ./community/data/cn
+          [ -f "proxy-reserve.txt" ] && cat proxy-reserve.txt >> ./community/data/geolocation-\!cn
+          [ -f "reject-reserve.txt" ] && cat reject-reserve.txt >> ./community/data/category-ads-all
+          cp ./community/data/cn direct-list.txt
+          cp ./community/data/geolocation-\!cn proxy-list.txt
+          cp ./community/data/category-ads-all reject-list.txt
+          # Create additional lists
+          curl -sSL $CHINA_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "$1\n"' > ./community/data/china-list
+          curl -sSL $CHINA_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "$1\n"' > china-list.txt
+          curl -sSL $GOOGLEATCN_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "full:$1\n"' > ./community/data/google-cn
+          curl -sSL $GOOGLEATCN_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "full:$1\n"' > google-cn.txt
+          curl -sSL $APPLEATCN_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "full:$1\n"' > ./community/data/apple-cn
+          curl -sSL $APPLEATCN_DOMAINS_URL | perl -ne '/^server=\/([^\/]+)\// && print "full:$1\n"' > apple-cn.txt
+          cat ./gfwlist2dnsmasq/temp-gfwlist.txt | perl -ne '/^((?=^.{3,255})[a-zA-Z0-9][-_a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-_a-zA-Z0-9]{0,62})+)/ && print "$1\n"' >> ./community/data/gfw
+          cat ./community/data/gfw | sort --ignore-case -u > gfw.txt
+          cat ./community/data/greatfire | sort --ignore-case -u > greatfire.txt
 
-            - name: Convert to YAML format
-              run: |
-                  echo "payload:" > icloud.yaml
-                  curl -sSL ${CUSTOM_ICLOUD} | grep -E "^(full|domain):" | awk -F ':' '{printf "  - +.%s\n", $2}' >> icloud.yaml
-                  echo "payload:" > google@cn.yaml
-                  curl -sSL ${FELIXONMARS_GOOGLEATCN} | perl -ne '/^server=\/([^\/]+)\// && print "  - +.$1\n"' >> google@cn.yaml
-                  echo "payload:" > apple@cn.yaml
-                  curl -sSL ${FELIXONMARS_APPLEATCN} | perl -ne '/^server=\/([^\/]+)\// && print "  - +.$1\n"' >> apple@cn.yaml
-                  echo "payload:" > private.yaml
-                  curl -sSL ${CUSTOM_PRIVATE} | awk -F ':' '/^full:/ {printf "  - %s\n", $2}' >> private.yaml
-                  curl -sSL ${CUSTOM_PRIVATE} | awk -F ':' '/^domain:/ {printf "  - +.%s\n", $2}' >> private.yaml
-                  echo "payload:" > direct.yaml
-                  cat direct-list.txt | grep -Ev "^(regexp|keyword):" | perl -ne '/^(full:)([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - $2\n"' >> direct.yaml
-                  cat direct-list.txt | grep -Ev "^(regexp|keyword|full):" | perl -ne '/^(domain:)?([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - +.$2\n"' >> direct.yaml
-                  echo "payload:" > proxy.yaml
-                  cat proxy-list.txt | grep -Ev "^(regexp|keyword):" | perl -ne '/^(full:)([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - $2\n"' >> proxy.yaml
-                  cat proxy-list.txt | grep -Ev "^(regexp|keyword|full):" | perl -ne '/^(domain:)?([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - +.$2\n"' >> proxy.yaml
-                  echo "payload:" > reject.yaml
-                  cat reject-list.txt | grep -Ev "^(regexp|keyword):" | perl -ne '/^(domain:|full:)?([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - +.$2\n"' >> reject.yaml
-                  echo "payload:" > gfw.yaml
-                  cat gfw.txt | grep -Ev "^(regexp|keyword):" | perl -ne '/^(domain:|full:)?([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - +.$2\n"' >> gfw.yaml
-                  echo "payload:" > greatfire.yaml
-                  cat greatfire.txt | grep -Ev "^(regexp|keyword):" | perl -ne '/^(domain:|full:)?([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - +.$2\n"' >> greatfire.yaml
-                  echo "payload:" > tld-!cn.yaml
-                  curl -sSL ${CUSTOM_TLD_NOTCN} | perl -ne '/^domain:([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - +.$1\n"' >> tld-!cn.yaml
-                  echo "payload:" > cncidr.yaml
-                  curl -sSL ${CN_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> cncidr.yaml
-                  echo "payload:" > cloudflarecidr.yaml
-                  curl -sSL ${CLOUDFLARE_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> cloudflarecidr.yaml
-                  echo "payload:" > cloudfrontcidr.yaml
-                  curl -sSL ${CLOUDFRONT_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> cloudfrontcidr.yaml
-                  echo "payload:" > facebookcidr.yaml
-                  curl -sSL ${FACEBOOK_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> facebookcidr.yaml
-                  echo "payload:" > fastlycidr.yaml
-                  curl -sSL ${FASTLY_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> fastlycidr.yaml
-                  echo "payload:" > googlecidr.yaml
-                  curl -sSL ${GOOGLE_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> googlecidr.yaml
-                  echo "payload:" > netflixcidr.yaml
-                  curl -sSL ${NETFLIX_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> netflixcidr.yaml
-                  echo "payload:" > telegramcidr.yaml
-                  curl -sSL ${TELEGRAM_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> telegramcidr.yaml
-                  echo "payload:" > xcidr.yaml
-                  curl -sSL ${X_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> xcidr.yaml
-                  echo "payload:" > lancidr.yaml
-                  curl -sSL ${LAN_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> lancidr.yaml
+      - name: Convert to YAML format
+        run: |
+          echo "payload:" > icloud.yaml
+          curl -sSL ${CUSTOM_ICLOUD} | grep -E "^(full|domain):" | awk -F ':' '{printf "  - +.%s\n", $2}' >> icloud.yaml
+          echo "payload:" > google@cn.yaml
+          curl -sSL ${FELIXONMARS_GOOGLEATCN} | perl -ne '/^server=\/([^\/]+)\// && print "  - +.$1\n"' >> google@cn.yaml
+          echo "payload:" > apple@cn.yaml
+          curl -sSL ${FELIXONMARS_APPLEATCN} | perl -ne '/^server=\/([^\/]+)\// && print "  - +.$1\n"' >> apple@cn.yaml
+          echo "payload:" > private.yaml
+          curl -sSL ${CUSTOM_PRIVATE} | awk -F ':' '/^full:/ {printf "  - %s\n", $2}' >> private.yaml
+          curl -sSL ${CUSTOM_PRIVATE} | awk -F ':' '/^domain:/ {printf "  - +.%s\n", $2}' >> private.yaml
+          echo "payload:" > direct.yaml
+          cat direct-list.txt | grep -Ev "^(regexp|keyword):" | perl -ne '/^(full:)([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - $2\n"' >> direct.yaml
+          cat direct-list.txt | grep -Ev "^(regexp|keyword|full):" | perl -ne '/^(domain:)?([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - +.$2\n"' >> direct.yaml
+          echo "payload:" > proxy.yaml
+          cat proxy-list.txt | grep -Ev "^(regexp|keyword):" | perl -ne '/^(full:)([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - $2\n"' >> proxy.yaml
+          cat proxy-list.txt | grep -Ev "^(regexp|keyword|full):" | perl -ne '/^(domain:)?([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - +.$2\n"' >> proxy.yaml
+          echo "payload:" > reject.yaml
+          cat reject-list.txt | grep -Ev "^(regexp|keyword):" | perl -ne '/^(domain:|full:)?([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - +.$2\n"' >> reject.yaml
+          echo "payload:" > gfw.yaml
+          cat gfw.txt | grep -Ev "^(regexp|keyword):" | perl -ne '/^(domain:|full:)?([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - +.$2\n"' >> gfw.yaml
+          echo "payload:" > greatfire.yaml
+          cat greatfire.txt | grep -Ev "^(regexp|keyword):" | perl -ne '/^(domain:|full:)?([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - +.$2\n"' >> greatfire.yaml
+          echo "payload:" > tld-!cn.yaml
+          curl -sSL ${CUSTOM_TLD_NOTCN} | perl -ne '/^domain:([-_a-zA-Z0-9]+(\.[-_a-zA-Z0-9]+)*)/ && print "  - +.$1\n"' >> tld-!cn.yaml
+          echo "payload:" > cncidr.yaml
+          curl -sSL ${CN_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> cncidr.yaml
+          echo "payload:" > cloudflarecidr.yaml
+          curl -sSL ${CLOUDFLARE_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> cloudflarecidr.yaml
+          echo "payload:" > cloudfrontcidr.yaml
+          curl -sSL ${CLOUDFRONT_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> cloudfrontcidr.yaml
+          echo "payload:" > facebookcidr.yaml
+          curl -sSL ${FACEBOOK_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> facebookcidr.yaml
+          echo "payload:" > fastlycidr.yaml
+          curl -sSL ${FASTLY_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> fastlycidr.yaml
+          echo "payload:" > googlecidr.yaml
+          curl -sSL ${GOOGLE_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> googlecidr.yaml
+          echo "payload:" > netflixcidr.yaml
+          curl -sSL ${NETFLIX_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> netflixcidr.yaml
+          echo "payload:" > telegramcidr.yaml
+          curl -sSL ${TELEGRAM_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> telegramcidr.yaml
+          echo "payload:" > xcidr.yaml
+          curl -sSL ${X_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> xcidr.yaml
+          echo "payload:" > lancidr.yaml
+          curl -sSL ${LAN_CIDR} | perl -ne '/(.+\/\d+)/ && print "  - $1\n"' >> lancidr.yaml
 
-            - name: Prepare rulesets for merging
-              run: |
-                  mkdir -p to-be-merged
-                  cp *.yaml to-be-merged/
-                  curl -sSL ${APPLICATIONS} > to-be-merged/applications.yaml
+      - name: Prepare rulesets for merging
+        run: |
+          mkdir -p to-be-merged
+          cp *.yaml to-be-merged/
+          curl -sSL ${APPLICATIONS} > to-be-merged/applications.yaml
 
-            - name: Upload built rulesets
-              uses: actions/upload-artifact@v4
-              with:
-                  name: basic
-                  path: to-be-merged
+      - name: Upload built rulesets
+        uses: actions/upload-artifact@v4
+        with:
+          name: basic
+          path: to-be-merged
 
-    merge-universal-into-basic-and-publish:
-        runs-on: ubuntu-latest
-        needs: [build-and-publish-universal-rulesets, build-basic-rulesets]
+  merge-universal-into-basic-and-publish:
+    runs-on: ubuntu-latest
+    needs: [build-and-publish-universal-rulesets, build-basic-rulesets]
 
-        steps:
-            - name: Set environment variables
-              run: |
-                  echo "RELEASE_TITLE=Released on $(date +%Y%m%d%H%M)" >> $GITHUB_ENV
-                  echo "TAG=$(date +%Y%m%d%H%M)" >> $GITHUB_ENV
-                  echo "METACUBEX_NTR_URL=https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/master/resouces" >> $GITHUB_ENV
-                  echo "LOYALSOLDIER_NTR_URL=https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/refs/heads/hidden" >> $GITHUB_ENV
-              shell: bash
+    steps:
+      - name: Set environment variables
+        run: |
+          echo "RELEASE_TITLE=Released on $(date +%Y%m%d%H%M)" >> $GITHUB_ENV
+          echo "TAG=$(date +%Y%m%d%H%M)" >> $GITHUB_ENV
+          echo "METACUBEX_NTR_URL=https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/master/resouces" >> $GITHUB_ENV
+          echo "LOYALSOLDIER_NTR_URL=https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/refs/heads/hidden" >> $GITHUB_ENV
+        shell: bash
 
-            - name: Checkout repository
-              uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-            - name: Prepare workspace
-              run: |
-                  mkdir -p merged converter publish redundant ntr list-final publish/yaml
+      - name: Prepare workspace
+        run: |
+          mkdir -p merged converter publish redundant ntr list-final publish/yaml
 
-            - name: Download rulesets
-              uses: actions/download-artifact@v4
-              with:
-                  name: universal
-                  path: universal
-            - uses: actions/download-artifact@v4
-              with:
-                  name: basic
-                  path: basic
+      - name: Download rulesets
+        uses: actions/download-artifact@v4
+        with:
+          name: universal
+          path: universal
+      - uses: actions/download-artifact@v4
+        with:
+          name: basic
+          path: basic
 
-            - name: Merge and process rulesets
-              run: |
-                  # Merge function definition
-                  merge_rulesets() {
-                    local output_file=$1
-                    shift
-                    local input_files=("$@")
-                    (
-                      cat "${input_files[@]}" | \
-                      sed "s/^[ ]*-[ ]*//; s/^'//; s/'$//" | \
-                      sort -u | \
-                      awk '{
-                        if ($0 ~ /^\+\./) {
-                          domain = substr($0, 3)
-                          seen[domain] = 1
-                          print $0
-                        } else if (!seen[$0]) {
-                          print $0
-                        }
-                      }' | \
-                      sed "s/^/  - /" > merged/temp.txt
-                    )
-                    echo "payload:" > "merged/${output_file}"
-                    grep -v "payload:" merged/temp.txt >> "merged/${output_file}"
-                    rm merged/temp.txt
-                  }
-                  # Merge rulesets
-                  files=(apple@cn direct gfw google@cn greatfire icloud proxy reject)
-                  for file in ${files[@]}; do
-                    merge_rulesets ${file}.yaml basic/${file}.yaml universal/${file}.yaml
-                  done
-                  # Remove redundant domains
-                  chmod +x ./scripts/*.py
-                  for file in ${files[@]}; do
-                    python ./scripts/yaml_to_list.py merged/${file}.yaml ./redundant/${file}-list-with-redundant
-                    python ./scripts/find_redundant_domain.py ./redundant/${file}-list-with-redundant ./redundant/${file}-list-deleted-unsort
-                    [ ! -f "redundant/${file}-list-deleted-unsort" ] && touch "redundant/${file}-list-deleted-unsort"
-                    sort "redundant/${file}-list-deleted-unsort" > "redundant/${file}-list-deleted-sort"
-                    python ./scripts/remove_from.py -remove ./redundant/${file}-list-deleted-sort -from ./redundant/${file}-list-with-redundant -out ./redundant/${file}-list-without-redundant
-                  done
-                  # Prepare final lists
-                  for file in ${files[@]}; do
-                    [ "$file" != "direct" ] && [ "$file" != "proxy" ] && cp ./redundant/${file}-list-without-redundant ./list-final/${file}
-                  done
+      - name: Merge and process rulesets
+        run: |
+          # Merge function definition
+          merge_rulesets() {
+            local output_file=$1
+            shift
+            local input_files=("$@")
+            (
+              cat "${input_files[@]}" | \
+              sed "s/^[ ]*-[ ]*//; s/^'//; s/'$//" | \
+              sort -u | \
+              awk '{
+                if ($0 ~ /^\+\./) {
+                  domain = substr($0, 3)
+                  seen[domain] = 1
+                  print $0
+                } else if (!seen[$0]) {
+                  print $0
+                }
+              }' | \
+              sed "s/^/  - /" > merged/temp.txt
+            )
+            echo "payload:" > "merged/${output_file}"
+            grep -v "payload:" merged/temp.txt >> "merged/${output_file}"
+            rm merged/temp.txt
+          }
+          # Merge rulesets
+          files=(apple@cn direct gfw google@cn greatfire icloud proxy reject)
+          for file in ${files[@]}; do
+            merge_rulesets ${file}.yaml basic/${file}.yaml universal/${file}.yaml
+          done
+          # Remove redundant domains
+          chmod +x ./scripts/*.py
+          for file in ${files[@]}; do
+            python ./scripts/yaml_to_list.py merged/${file}.yaml ./redundant/${file}-list-with-redundant
+            python ./scripts/find_redundant_domain.py ./redundant/${file}-list-with-redundant ./redundant/${file}-list-deleted-unsort
+            [ ! -f "redundant/${file}-list-deleted-unsort" ] && touch "redundant/${file}-list-deleted-unsort"
+            sort "redundant/${file}-list-deleted-unsort" > "redundant/${file}-list-deleted-sort"
+            python ./scripts/remove_from.py -remove ./redundant/${file}-list-deleted-sort -from ./redundant/${file}-list-with-redundant -out ./redundant/${file}-list-without-redundant
+          done
+          # Prepare final lists
+          for file in ${files[@]}; do
+            [ "$file" != "direct" ] && [ "$file" != "proxy" ] && cp ./redundant/${file}-list-without-redundant ./list-final/${file}
+          done
 
-            - name: Apply exclusion lists
-              run: |
-                  # Download need-to-remove lists
-                  for file in direct-need-to-remove proxy-need-to-remove; do
-                    curl -sSL ${METACUBEX_NTR_URL}/${file} > ./ntr/${file}
-                    curl -sSL ${LOYALSOLDIER_NTR_URL}/${file} >> ./ntr/${file}
-                  done
-                  # Remove domains from exclusion lists
-                  for file in direct proxy; do
-                    python ./scripts/remove_from.py -remove ./ntr/${file}-need-to-remove -from ./redundant/${file}-list-without-redundant -out ./list-final/${file}
-                  done
-                  # Convert lists back to YAML
-                  files=(apple@cn direct gfw google@cn greatfire icloud proxy reject)
-                  for file in ${files[@]}; do
-                    sort -u ./list-final/${file} -o ./list-final/${file}
-                    python ./scripts/list_to_yaml.py ./list-final/${file} ./merged/${file}.yaml
-                  done
-                  # Sort and remove duplicates from private and tld-!cn
-                  for file in private tld-!cn; do
-                    head -n 1 ./basic/${file}.yaml > ./basic/temp
-                    tail -n +2 ./basic/${file}.yaml | sort -u >> ./basic/temp
-                    mv ./basic/temp ./basic/${file}.yaml
-                  done
+      - name: Apply exclusion lists
+        run: |
+          # Download need-to-remove lists
+          for file in direct-need-to-remove proxy-need-to-remove; do
+            curl -sSL ${METACUBEX_NTR_URL}/${file} > ./ntr/${file}
+            curl -sSL ${LOYALSOLDIER_NTR_URL}/${file} >> ./ntr/${file}
+          done
+          # Remove domains from exclusion lists
+          for file in direct proxy; do
+            python ./scripts/remove_from.py -remove ./ntr/${file}-need-to-remove -from ./redundant/${file}-list-without-redundant -out ./list-final/${file}
+          done
+          # Convert lists back to YAML
+          files=(apple@cn direct gfw google@cn greatfire icloud proxy reject)
+          for file in ${files[@]}; do
+            sort -u ./list-final/${file} -o ./list-final/${file}
+            python ./scripts/list_to_yaml.py ./list-final/${file} ./merged/${file}.yaml
+          done
+          # Sort and remove duplicates from private and tld-!cn
+          for file in private tld-!cn; do
+            head -n 1 ./basic/${file}.yaml > ./basic/temp
+            tail -n +2 ./basic/${file}.yaml | sort -u >> ./basic/temp
+            mv ./basic/temp ./basic/${file}.yaml
+          done
 
-            - name: Prepare converter
-              run: |
-                  LATEST_VERSION=$(curl -s https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r .tag_name)
-                  curl -L "https://github.com/MetaCubeX/mihomo/releases/download/${LATEST_VERSION}/mihomo-linux-amd64-${LATEST_VERSION}.gz" -o converter/mihomo.gz
-                  gzip -d converter/mihomo.gz
-                  chmod +x converter/mihomo
+      - name: Prepare converter
+        run: |
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r .tag_name)
+          curl -L "https://github.com/MetaCubeX/mihomo/releases/download/${LATEST_VERSION}/mihomo-linux-amd64-${LATEST_VERSION}.gz" -o converter/mihomo.gz
+          gzip -d converter/mihomo.gz
+          chmod +x converter/mihomo
 
-            - name: Convert to MRS format
-              run: |
-                  files=(apple@cn direct gfw google@cn greatfire icloud private proxy reject tld-!cn cncidr lancidr cloudflarecidr cloudfrontcidr facebookcidr fastlycidr googlecidr netflixcidr telegramcidr xcidr)
-                  cidr_files=(cncidr lancidr cloudflarecidr cloudfrontcidr facebookcidr fastlycidr googlecidr netflixcidr telegramcidr xcidr)
-                  merged_files=(apple@cn direct gfw google@cn greatfire icloud proxy reject)
-                  for file in ${files[@]}; do
-                    if [[ " ${merged_files[*]} " =~ " ${file} " ]]; then
-                      input_dir="merged"
-                      ruleset_type="domain"
-                    elif [[ " ${cidr_files[*]} " =~ " ${file} " ]]; then
-                      input_dir="basic"
-                      ruleset_type="ipcidr"
-                    else
-                      input_dir="basic"
-                      ruleset_type="domain"
-                    fi
-                    ./converter/mihomo convert-ruleset ${ruleset_type} yaml ${input_dir}/${file}.yaml publish/${file}.mrs
-                    cp ${input_dir}/${file}.yaml publish/yaml/${file}.yaml
-                  done
-                  cp basic/applications.yaml publish/applications.yaml
+      - name: Convert to MRS format
+        run: |
+          files=(apple@cn direct gfw google@cn greatfire icloud private proxy reject tld-!cn cncidr lancidr cloudflarecidr cloudfrontcidr facebookcidr fastlycidr googlecidr netflixcidr telegramcidr xcidr)
+          cidr_files=(cncidr lancidr cloudflarecidr cloudfrontcidr facebookcidr fastlycidr googlecidr netflixcidr telegramcidr xcidr)
+          merged_files=(apple@cn direct gfw google@cn greatfire icloud proxy reject)
+          for file in ${files[@]}; do
+            if [[ " ${merged_files[*]} " =~ " ${file} " ]]; then
+              input_dir="merged"
+              ruleset_type="domain"
+            elif [[ " ${cidr_files[*]} " =~ " ${file} " ]]; then
+              input_dir="basic"
+              ruleset_type="ipcidr"
+            else
+              input_dir="basic"
+              ruleset_type="domain"
+            fi
+            ./converter/mihomo convert-ruleset ${ruleset_type} yaml ${input_dir}/${file}.yaml publish/${file}.mrs
+            cp ${input_dir}/${file}.yaml publish/yaml/${file}.yaml
+          done
+          cp basic/applications.yaml publish/applications.yaml
 
-            - name: Push to basic branch
-              run: |
-                  cd publish
-                  git init
-                  git config --local user.name "github-actions[bot]"
-                  git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-                  git checkout -b basic
-                  git add .
-                  git commit -m "${{ env.RELEASE_TITLE }}"
-                  git remote add origin "https://github-actions[bot]:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
-                  git push -f origin basic
-                  cp tld-!cn.mrs tld-notcn.mrs
-                  rm tld-!cn.mrs
+      - name: Push to basic branch
+        run: |
+          cd publish
+          git init
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b basic
+          git add .
+          git commit -m "${{ env.RELEASE_TITLE }}"
+          git remote add origin "https://github-actions[bot]:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
+          git push -f origin basic
+          cp tld-!cn.mrs tld-notcn.mrs
+          rm tld-!cn.mrs
 
-            - name: Release assets
-              uses: softprops/action-gh-release@v2
-              with:
-                  name: "${{ env.RELEASE_TITLE }}"
-                  tag_name: "${{ env.TAG }}"
-                  draft: false
-                  prerelease: false
-                  files: |
-                      publish/*.mrs
-                      publish/applications.yaml
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "${{ env.RELEASE_TITLE }}"
+          tag_name: "${{ env.TAG }}"
+          draft: false
+          prerelease: false
+          files: |
+            publish/*.mrs
+            publish/applications.yaml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    purge-basic-rulesets-cdn-cache:
-        runs-on: ubuntu-latest
-        needs: merge-universal-into-basic-and-publish
+  purge-basic-rulesets-cdn-cache:
+    runs-on: ubuntu-latest
+    needs: merge-universal-into-basic-and-publish
 
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-              with:
-                  ref: basic
-                  path: basic
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: basic
+          path: basic
 
-            - name: Purge CDN cache
-              run: |
-                  cd basic
-                  for file in $(ls); do
-                    curl -i "https://purge.jsdelivr.net/gh/${{ github.repository }}@basic/${file}"
-                  done
+      - name: Purge CDN cache
+        run: |
+          cd basic
+          for file in $(ls); do
+            curl -i "https://purge.jsdelivr.net/gh/${{ github.repository }}@basic/${file}"
+          done
 
-    purge-universal-rulesets-cdn-cache:
-        runs-on: ubuntu-latest
-        needs: build-and-publish-universal-rulesets
+  purge-universal-rulesets-cdn-cache:
+    runs-on: ubuntu-latest
+    needs: build-and-publish-universal-rulesets
 
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-              with:
-                  ref: universal
-                  path: universal
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: universal
+          path: universal
 
-            - name: Purge CDN cache
-              run: |
-                  cd universal
-                  for file in $(ls); do
-                    curl -i "https://purge.jsdelivr.net/gh/${{ github.repository }}@universal/${file}"
-                  done
+      - name: Purge CDN cache
+        run: |
+          cd universal
+          for file in $(ls); do
+            curl -i "https://purge.jsdelivr.net/gh/${{ github.repository }}@universal/${file}"
+          done
