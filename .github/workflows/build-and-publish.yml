@@ -42,7 +42,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: Project-META/rules-converter
-          token: ${{ secrets.PAT }}
           path: converter
       - uses: actions/checkout@v4
         with:
