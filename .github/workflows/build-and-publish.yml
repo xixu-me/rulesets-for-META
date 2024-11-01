@@ -116,7 +116,7 @@ jobs:
 
             - name: Merge additional lists
               env:
-                  SED: sed '/^\s*#/d' | sed 's/DOMAIN,//g' | sed 's/DOMAIN-SUFFIX,//g' | sed 's/DOMAIN-KEYWORD,/keyword:/g'
+                  SED: sed '/^\s*#/d' | sed 's/^PROCESS-NAME,//' | sed 's/DOMAIN,/full:/g' | sed 's/DOMAIN-SUFFIX,//g' | sed 's/DOMAIN-KEYWORD,/keyword:/g' | sed '/^\s*IP-CIDR/d'
               run: |
                   # Merge SteamCN list
                   curl -sSL https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/SteamCN/SteamCN.list | ${{ env.SED }} > steamcn.txt
@@ -127,7 +127,7 @@ jobs:
                   echo "sharepoint.cn" >> ./community/data/onedrive 
                   curl -sSL https://raw.githubusercontent.com/xishang0128/rules/main/sharepoint.list > ./community/data/sharepoint
                   curl -sSL https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/PrivateTracker/PrivateTracker.list | ${{ env.SED }} > ./community/data/tracker
-                  curl -sSL https://gitea.com/XIU2/TrackersListCollection/raw/branch/master/all.txt | grep -i "\.[A-Z]" | grep -v tracker | sed 's/^.*\/\///g' | sed 's/:.*\/.*//g' >> ./community/data/tracker
+                  curl -sSL https://github.com/XIU2/TrackersListCollection/raw/refs/heads/master/all.txt | grep -i "\.[A-Z]" | grep -v tracker | sed 's/^.*\/\///g' | sed 's/:.*\/.*//g' >> ./community/data/tracker
                   curl -sSL https://github.com/blackmatrix7/ios_rule_script/raw/master/rule/Clash/BlockHttpDNS/BlockHttpDNS.list | ${{ env.SED }} > ./community/data/httpdns
 
             - name: Generate rulesets in YAML and MRS format
