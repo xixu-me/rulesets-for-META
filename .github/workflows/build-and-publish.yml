@@ -41,7 +41,7 @@ jobs:
           path: community
       - uses: actions/checkout@v4
         with:
-          repository: MetaCubeX/rules-converter
+          repository: MetaCubeX/meta-rules-converter
           path: converter
       - uses: actions/checkout@v4
         with:
