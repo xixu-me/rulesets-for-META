@@ -1,4 +1,4 @@
-# Rulesets for META
+# rulesets for META
 
 ## Disclaimer
 
@@ -13,6 +13,6 @@
 
 ## License
 
-Copyright &copy; 2024 Xi Xu. All rights reserved.
+Copyright &copy; 2024 [Xi Xu](https://xi-xu.me). All rights reserved.
 
 Licensed under the [GPL-3.0](https://github.com/xixu-me/rulesets-for-META/blob/main/LICENSE) license.  
