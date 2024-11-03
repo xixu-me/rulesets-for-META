@@ -1,5 +1,9 @@
 # rulesets for META
 
+## Overview
+
+This repository provides two series of rulesets ([basic](https://github.com/xixu-me/rulesets-for-META/tree/basic) and [universal](https://github.com/xixu-me/rulesets-for-META/tree/universal)) in MRS format, which are updated every 4 hours (see [workflow file](https://github.com/xixu-me/rulesets-for-META/blob/main/.github/workflows/build-and-publish.yml) for details), built specifically for [META](https://github.com/xixu-me/META).
+
 ## Disclaimer
 
 1. This repository is strictly for educational and research purposes.
